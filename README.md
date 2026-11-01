@@ -7,5 +7,5 @@ npm install
 
 to run server, run
 ```bash
-npm src/app.js
+node src/app.js
 ```
