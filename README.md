@@ -1,4 +1,4 @@
-cfudel
+cfduel
 
 to install dependencies (like express, etc...), run
 ```bash
