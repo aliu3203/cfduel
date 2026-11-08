@@ -7,5 +7,7 @@ npm install
 
 to run server, run
 ```bash
-node src/server.js
+node --env-file=.env src/server.js"
 ```
+
+make sure postgres is installed and create a .env following .env.example (It is used in db.js to establish connection with your local database)
