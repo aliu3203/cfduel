@@ -1,6 +1,6 @@
 const router = require('express').Router();
 
-const authRoutes = require('./auth')
+const authRoutes = require('./auth');
 
 // implement api routes here, callbacks should go into
 // separate folder src/controllers
