@@ -4,7 +4,7 @@ CREATE TABLE if NOT EXISTS users (
     email VARCHAR(253) NOT NULL UNIQUE, -- 50 char limit
     password_hash TEXT NOT NULL,
     cf_handle VARCHAR(24) UNIQUE, -- can be empty if cf not synced
-    rating INT NOT NULL DEFAULT 1000
+    rating INT NOT NULL DEFAULT 1000,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
