@@ -19,7 +19,7 @@ function validateRegister( {username, email, password} ){
         return "invalid email";
     }
     if(password.length > 72 || password.length < 8){
-        return "invalid password (must be between 8 or 72 characters";
+        return "invalid password (must be between 8 or 72 characters)";
     }
     return null;
 }

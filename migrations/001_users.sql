@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS citext;
+
 CREATE TABLE if NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     username CITEXT NOT NULL UNIQUE CHECK (char_length(username) <= 30), -- we constraint usernames to be 30 characters
