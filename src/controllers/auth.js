@@ -1,7 +1,8 @@
 const pool = require('../db');
 const bcrypt = require('bcrypt');
+const validateRegister = require('../validation/auth');
 
-const SALT_ROUNDS = 12;
+const SALT_ROUNDS = 12; 
 
 async function register (req, res) {
     const {username, email, password} = req.body ?? {};
@@ -11,6 +12,8 @@ async function register (req, res) {
         return res.status(400).json({error: "something is empty"});
     }
     
+    const error = validateRegister( { username, email, password });
+
     const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
     //add to db
 

@@ -1,0 +1,49 @@
+openapi: 3.1.0
+
+info:
+  title: cfduel API
+  version: 0.1.0
+  description: HTTPS API for cfduel
+
+servers:
+  - url: http://localhost:3000
+
+tags:
+  - name: auth
+
+paths:
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Create an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password]
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 30
+                  pattern: '^[a-zA-Z0-9_]{3,30}$'
+                  description: should contain between 3-30 characters and not contain special charactesr
+                email:
+                  type: string
+                  maxLength: 250
+                  description: the email
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 72
+                  description: any character with length from 8-72
+                
+      responses:
+        '201':
+          description: Account created
+        '400':
+          description: Missing or invalid field
+        '409':
+          description: Username or email already taken
