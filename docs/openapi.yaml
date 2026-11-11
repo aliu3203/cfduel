@@ -33,6 +33,7 @@ paths:
                 email:
                   type: string
                   maxLength: 250
+                  pattern: '^[^\s@]+@[^\s@]+\.[^\s@]+$'
                   description: the email
                 password:
                   type: string
@@ -47,3 +48,5 @@ paths:
           description: Missing or invalid field
         '409':
           description: Username or email already taken
+        '500':
+          description: Every other errors
