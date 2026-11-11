@@ -84,4 +84,19 @@ describe('validateRegister', () => {
         });
     });
 
+    describe('invalidate boundary values', () => {
+        const cases = [
+            ['2-char username', {username: 'ac'}],
+            ['31-char username', {username: 'abcdefghijklmnopqrstuvwxyzabcde'}]
+        ];
+        for (const [name, override] of cases){
+            test(name, () => {
+                const err = validateRegister({...valid, ...override});
+
+                assert.equal(typeof err, 'string', 'expected error message');
+
+                assert.ok(err);
+            });
+        }
+    })
 });
