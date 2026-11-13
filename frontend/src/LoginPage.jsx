@@ -1,42 +1,40 @@
 import { useState } from "react";
 
-function UsernameBox() {
+function UsernameBox({name, setName}) {
     return (
         <label>
             Username: 
-            <input> 
-
-            </input>
+            <input value={name} onChange={(x) => setName(x.target.value)}/>
         </label>
     );
 }
 
-function PasswordBox() {
+function PasswordBox({pass, setPass}) {
     return (
         <label> Password:
-            <input>
-
-            </input>
+            <input type="password" value={pass} onChange={(x) => setPass(x.target.value)}/>
         </label>
 
     );
 }
 
 function LoginButton() {
-    function handleClick(){
-        alert("login")
-    };
-
-    return (<button onClick={handleClick}>
-        Login
-    </button>);
+    return <button type="submit">Login</button>
 }
 
 export default function LoginPage() {
+    const [username, setUser] = useState("")
+    const [password, setPassword] = useState("")
+
+    function handleLogin(e){
+        e.preventDefault()
+        //this has to be connected to backend
+    }
+
     return (
         <form>
-            <UsernameBox />
-            <PasswordBox />
+            <UsernameBox name={username} setName={setUser}/>
+            <PasswordBox pass={password} setPass={setPassword}/>
             <LoginButton />
         </form>
     );
