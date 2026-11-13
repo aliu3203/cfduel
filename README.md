@@ -2,6 +2,12 @@
 
 codeforce dueling app
 
+## Layout
+
+- `backend/` — Express API (Node.js, PostgreSQL)
+- `frontend/` — React app (Vite)
+- `docs/` — API documentation ([`openapi.yaml`](docs/openapi.yaml))
+
 ## Prerequisites
 
 - Node.js 22+
@@ -11,16 +17,21 @@ codeforce dueling app
   brew services start postgresql@16
   ```
 
-## Setup
+## Backend
+
+All commands in this section run from `backend/`.
+
+### Setup
 
 ```bash
+cd backend
 npm install
 cp .env.example .env          # then replace USER with your macOS username (run `whoami`)
 createdb cfduel
 psql -d cfduel -f migrations/001_users.sql
 ```
 
-## Running the server
+### Running the server
 
 ```bash
 npm start                     # http://localhost:3000
@@ -28,7 +39,7 @@ npm start                     # http://localhost:3000
 
 The API is documented in [`docs/openapi.yaml`](docs/openapi.yaml).
 
-## Running tests
+### Running tests
 
 Tests use a separate database, `cfduel_test`, which they wipe and rebuild on every run.
 
@@ -36,7 +47,7 @@ Tests use a separate database, `cfduel_test`, which they wipe and rebuild on eve
 createdb cfduel_test
 ```
 
-Create `.env.test` (gitignored), with `USER` replaced by your username:
+Create `backend/.env.test` (gitignored), with `USER` replaced by your username:
 
 ```
 DATABASE_URL=postgres://USER@localhost:5432/cfduel_test
@@ -49,4 +60,12 @@ Then:
 npm test                      # all tests
 npm run test:unit             # unit tests only (no database needed)
 npm run test:integration      # integration tests only (Postgres must be running)
+```
+
+## Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
 ```
