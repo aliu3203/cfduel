@@ -1,7 +1,9 @@
 const express = require('express');
-const router = require('./routes');
-
 const app = express();
+
+app.use(express.json());
+
+const router = require('./routes');
 
 // !!!!! IMPORTANT !!!!!!!!
 // This should mount to /api or something similar in the future
