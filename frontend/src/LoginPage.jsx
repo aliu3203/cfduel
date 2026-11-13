@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./Login.css";
 
 function UsernameBox({name, setName}) {
     return (
@@ -32,7 +33,7 @@ export default function LoginPage() {
     }
 
     return (
-        <form>
+        <form className="login" onSubmit={handleLogin}>
             <UsernameBox name={username} setName={setUser}/>
             <PasswordBox pass={password} setPass={setPassword}/>
             <LoginButton />
