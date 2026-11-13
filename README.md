@@ -1,45 +1,52 @@
-cfduel
+# cfduel
 
-to install dependencies (like express, etc...), run
+codeforce dueling app
+
+## Prerequisites
+
+- Node.js 22+
+- PostgreSQL 16 (Homebrew on macOS recommended):
+  ```bash
+  brew install postgresql@16
+  brew services start postgresql@16
+  ```
+
+## Setup
+
 ```bash
 npm install
+cp .env.example .env          # then replace USER with your macOS username (run `whoami`)
+createdb cfduel
+psql -d cfduel -f migrations/001_users.sql
 ```
 
-to run server, copy .env.example and modify, then run
+## Running the server
+
 ```bash
-npm start
+npm start                     # http://localhost:3000
 ```
 
-to install postgresql with homebrew, run
-```bash
-brew install postgresql
-```
+The API is documented in [`docs/openapi.yaml`](docs/openapi.yaml).
 
-make sure postgres is installed and create a .env following .env.example (It is used in db.js to establish connection with your local database)
+## Running tests
 
+Tests use a separate database, `cfduel_test`, which they wipe and rebuild on every run.
 
-## Running Tests
-Ensure that postgres is enabled. I recommend using homebrew. Once it is installed,
-
-Run
-```bash
-brew services start postgresql@16
-```
-to start postgres. (with homebrew)
-
-In command line, create a test db with
 ```bash
 createdb cfduel_test
 ```
-then create `.env.test` with content:
+
+Create `.env.test` (gitignored), with `USER` replaced by your username:
+
 ```
 DATABASE_URL=postgres://USER@localhost:5432/cfduel_test
 NODE_ENV=test
 ```
 
-Now, you can run tests with
+Then:
+
 ```bash
-npm test    # run all unit + integration tests
-npm run test:unit   # run all unit tests
-npm run test:integration    # run all integration tests
+npm test                      # all tests
+npm run test:unit             # unit tests only (no database needed)
+npm run test:integration      # integration tests only (Postgres must be running)
 ```
