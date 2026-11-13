@@ -27,9 +27,31 @@ export default function LoginPage() {
     const [username, setUser] = useState("")
     const [password, setPassword] = useState("")
 
-    function handleLogin(e){
+    async function handleLogin(e){
         e.preventDefault()
         //this has to be connected to backend
+        /*
+        try{
+            const response = await fetch("a url", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({username,password})
+                }
+            );
+
+            const data = await response.json();
+
+            if(response.ok){
+                alert("login successful");
+            } else{
+                alert(data.message || "login failed");
+            }
+        } catch(error){
+            alert("server cannot be connected");
+        }
+         */
     }
 
     return (
