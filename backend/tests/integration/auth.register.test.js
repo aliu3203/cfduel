@@ -1,11 +1,11 @@
-const { describe, test, before, beforeEach, after } = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const request = require('supertest');
+import { describe, test, before, beforeEach, after } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import request from 'supertest';
 
-const app = require('../../src/app');
-const pool = require('../../src/db');
+import app from '../../src/app.js';
+import pool from '../../src/db.js';
 
 const valid = { username: 'alice', email: 'alice@example.com', password: 'correct-horse' };
 const register = (body) => request(app).post('/auth/register').send(body);
@@ -17,7 +17,7 @@ before(async () => {
         throw new Error(`refusing to wipe "${rows[0].db}": use a database ending in _test`);
     }
     await pool.query('DROP TABLE IF EXISTS users');
-    const migration = path.join(__dirname, '../../migrations/001_users.sql');
+    const migration = path.join(import.meta.dirname, '../../migrations/001_users.sql');
     await pool.query(fs.readFileSync(migration, 'utf8'));
 });
 beforeEach(() => pool.query('TRUNCATE users RESTART IDENTITY'));

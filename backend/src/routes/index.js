@@ -1,4 +1,5 @@
-const router = require('express').Router();
+import { Router } from 'express';
+import authRoutes from './auth.js';
 
 const authRoutes = require('./auth');
 const duelRoutes = require('./duel')
@@ -13,4 +14,4 @@ router.get('/', (req, res) => {
     res.send("Hello World!");
 });
 
-module.exports = router;
+export default router;
