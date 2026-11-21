@@ -44,4 +44,37 @@ describe('duelDecide', () => {
             assert.equal(duelDecide(check), 'player2_won');
         });
     });
+
+    describe('when both players have solved', () => {
+        // Both solves can show up in the same poll, so the earlier solve time decides it.
+        test('player 2 wins when they solved first', () => {
+            const check = duelCheck({
+                now: '2026-11-20T18:45:00Z',
+                player1Solved: '2026-11-20T18:42:00Z',
+                player2Solved: '2026-11-20T18:40:00Z',
+            });
+
+            assert.equal(duelDecide(check), 'player2_won');
+        });
+
+        test('player 1 wins when they solved first', () => {
+            const check = duelCheck({
+                now: '2026-11-20T18:45:00Z',
+                player1Solved: '2026-11-20T18:40:00Z',
+                player2Solved: '2026-11-20T18:42:00Z',
+            });
+
+            assert.equal(duelDecide(check), 'player1_won');
+        });
+
+        test('is a draw when both solved in the same second', () => {
+            const check = duelCheck({
+                now: '2026-11-20T18:45:00Z',
+                player1Solved: '2026-11-20T18:40:00Z',
+                player2Solved: '2026-11-20T18:40:00Z',
+            });
+
+            assert.equal(duelDecide(check), 'draw');
+        });
+    });
 });
