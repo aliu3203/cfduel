@@ -44,7 +44,19 @@ async function getFirstAcceptedSubmission(handle, problemId, startTime) {
     url.searchParams.set('count', String(RECENT_SUBMISSIONS_TO_CHECK));
 
     const response = await fetch(url);
-    const body = await response.json();
+
+    let body;
+    try {
+        body = await response.json();
+    } catch {
+        // Codeforces sends an HTML error page instead of JSON when it is down.
+        throw new Error(`Codeforces request failed with HTTP ${response.status}`);
+    }
+    if (body.status !== 'OK') {
+        // e.g. "handle: User with handle nobody not found" or "Call limit exceeded"
+        throw new Error(`Codeforces API error: ${body.comment}`);
+    }
+
     return findFirstAcceptedSubmission(body.result, problemId, startTime);
 }
 
