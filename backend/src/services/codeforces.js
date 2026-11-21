@@ -2,6 +2,9 @@
 
 const PROBLEM_ID_RE = /^(?<contestId>\d+)(?<index>[A-Z]\d*)$/;
 
+// Codeforces lists submissions newest first; nobody submits more than this during one duel.
+const RECENT_SUBMISSIONS_TO_CHECK = 100;
+
 // Splits a problem ID like "1850A" into its contest number and problem letter.
 function parseProblemId(problemId) {
     const match = PROBLEM_ID_RE.exec(problemId);
@@ -32,4 +35,17 @@ function findFirstAcceptedSubmission(submissions, problemId, startTime) {
     return new Date(Math.min(...solveTimes) * 1000);
 }
 
-module.exports = { findFirstAcceptedSubmission };
+// Fetches the user's recent submissions from Codeforces and returns when they first solved
+// the problem at or after startTime, or null if they haven't.
+async function getFirstAcceptedSubmission(handle, problemId, startTime) {
+    const url = new URL('https://codeforces.com/api/user.status');
+    url.searchParams.set('handle', handle);
+    url.searchParams.set('from', '1');
+    url.searchParams.set('count', String(RECENT_SUBMISSIONS_TO_CHECK));
+
+    const response = await fetch(url);
+    const body = await response.json();
+    return findFirstAcceptedSubmission(body.result, problemId, startTime);
+}
+
+module.exports = { findFirstAcceptedSubmission, getFirstAcceptedSubmission };

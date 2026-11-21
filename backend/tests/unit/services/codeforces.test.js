@@ -1,6 +1,6 @@
-const { describe, test } = require('node:test');
+const { describe, test, mock, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
-const { findFirstAcceptedSubmission } = require('../../../src/services/codeforces');
+const { findFirstAcceptedSubmission, getFirstAcceptedSubmission } = require('../../../src/services/codeforces');
 
 // Duel start used throughout: 2026-11-20 18:00:00 UTC (= 1795197600 in Unix seconds).
 const START = new Date('2026-11-20T18:00:00Z');
@@ -106,5 +106,42 @@ describe('findFirstAcceptedSubmission', () => {
                 `expected "${badId}" to be rejected`,
             );
         }
+    });
+});
+
+// Replaces the global fetch so tests never call the real Codeforces API.
+// The fake replies with `body` as JSON, the way Codeforces does.
+function fakeCodeforcesReply(body, status = 200) {
+    return mock.method(globalThis, 'fetch', async () =>
+        new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }),
+    );
+}
+
+describe('getFirstAcceptedSubmission', () => {
+    afterEach(() => mock.restoreAll());
+
+    test("returns the earliest solve from the user's Codeforces submissions", async () => {
+        fakeCodeforcesReply({
+            status: 'OK',
+            result: [
+                submission({ creationTimeSeconds: 1795197900 }), // 18:05:00
+                submission({ creationTimeSeconds: 1795197660 }), // 18:01:00
+            ],
+        });
+
+        const result = await getFirstAcceptedSubmission('alice', '1850A', START);
+
+        assert.deepEqual(result, new Date('2026-11-20T18:01:00Z'));
+    });
+
+    test("asks Codeforces for that user's submissions", async () => {
+        const fetchMock = fakeCodeforcesReply({ status: 'OK', result: [] });
+
+        await getFirstAcceptedSubmission('alice', '1850A', START);
+
+        assert.equal(fetchMock.mock.callCount(), 1);
+        const requestedUrl = new URL(fetchMock.mock.calls[0].arguments[0]);
+        assert.equal(requestedUrl.origin + requestedUrl.pathname, 'https://codeforces.com/api/user.status');
+        assert.equal(requestedUrl.searchParams.get('handle'), 'alice');
     });
 });
