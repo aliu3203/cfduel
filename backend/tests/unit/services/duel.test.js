@@ -79,24 +79,44 @@ describe('duelDecide', () => {
     });
 
     describe('when time runs out', () => {
-        test('a solve after the timer hit 0 does not count', () => {
+        test('player 1: a solve after the timer hit 0 does not count', () => {
             const check = duelCheck({ now: '2026-11-20T20:15:00Z', player1Solved: '2026-11-20T20:10:00Z' });
 
             assert.equal(duelDecide(check), 'draw');
         });
 
-        test('a solve in the exact second the timer hits 0 still wins', () => {
+        test('player 2: a solve after the timer hit 0 does not count', () => {
+            const check = duelCheck({ now: '2026-11-20T20:15:00Z', player2Solved: '2026-11-20T20:10:00Z' });
+
+            assert.equal(duelDecide(check), 'draw');
+        });
+
+        test('player 1: a solve in the exact second the timer hits 0 still wins', () => {
             // rule: a solve that lands as time runs out still counts; only later solves don't.
             const check = duelCheck({ now: '2026-11-20T20:00:30Z', player1Solved: '2026-11-20T20:00:00Z' });
 
             assert.equal(duelDecide(check), 'player1_won');
         });
 
-        test('a solve made in time still wins when it is only seen after time ran out', () => {
+        test('player 2: a solve in the exact second the timer hits 0 still wins', () => {
+            // rule: a solve that lands as time runs out still counts; only later solves don't.
+            const check = duelCheck({ now: '2026-11-20T20:00:30Z', player2Solved: '2026-11-20T20:00:00Z' });
+
+            assert.equal(duelDecide(check), 'player2_won');
+        });
+
+        test('player 1: a solve made in time still wins when it is only seen after time ran out', () => {
             // The server polls every so often, so a 19:59:50 solve may first be seen at 20:00:20.
             const check = duelCheck({ now: '2026-11-20T20:00:20Z', player1Solved: '2026-11-20T19:59:50Z' });
 
             assert.equal(duelDecide(check), 'player1_won');
+        });
+
+        test('player 2: a solve made in time still wins when it is only seen after time ran out', () => {
+            // The server polls every so often, so a 19:59:50 solve may first be seen at 20:00:20.
+            const check = duelCheck({ now: '2026-11-20T20:00:20Z', player2Solved: '2026-11-20T19:59:50Z' });
+
+            assert.equal(duelDecide(check), 'player2_won');
         });
 
         test('the player who solved in time wins when the other solved too late', () => {
