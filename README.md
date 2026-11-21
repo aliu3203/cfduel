@@ -23,12 +23,24 @@ All commands in this section run from `backend/`.
 
 ### Setup
 
+#### Mac
 ```bash
 cd backend
 npm install
 cp .env.example .env          # then replace USER with your macOS username (run `whoami`)
 createdb cfduel
 psql -d cfduel -f migrations/001_users.sql
+psql -d cfduel -f migrations/002_duels.sql
+```
+
+#### Windows
+```bash
+cd backend
+npm install
+cp .env.example .env
+# Set DATABASE_URL in .env
+docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/001_users.sql
+docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/002_duels.sql
 ```
 
 ### Running the server
