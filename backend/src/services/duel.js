@@ -1,6 +1,7 @@
 // Rules for deciding how a duel stands at a given moment.
 
-// Returns 'in_progress', 'player1_won', 'player2_won', or 'draw'.
+// Returns the winner ('player1' or 'player2'), 'draw', or null while the duel is still going.
+// These match the values stored in the duels table's result column.
 function duelDecide({ startTime, durationSeconds, now, player1SolveTime, player2SolveTime }) {
     const endTime = new Date(startTime.getTime() + durationSeconds * 1000);
 
@@ -10,23 +11,23 @@ function duelDecide({ startTime, durationSeconds, now, player1SolveTime, player2
 
     if (player1SolvedInTime && player2SolvedInTime) {
         if (player1SolveTime < player2SolveTime) {
-            return 'player1_won';
+            return 'player1';
         }
         if (player2SolveTime < player1SolveTime) {
-            return 'player2_won';
+            return 'player2';
         }
         return 'draw'; // same second
     }
     if (player1SolvedInTime) {
-        return 'player1_won';
+        return 'player1';
     }
     if (player2SolvedInTime) {
-        return 'player2_won';
+        return 'player2';
     }
     if (now >= endTime) {
         return 'draw';
     }
-    return 'in_progress';
+    return null; // still going
 }
 
 module.exports = { duelDecide };

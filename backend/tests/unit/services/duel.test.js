@@ -21,8 +21,8 @@ function duelCheck({ now, player1Solved = null, player2Solved = null }) {
 describe('duelDecide', () => {
     describe('when nobody has solved', () => {
         test('is still in progress while time remains', () => {
-            assert.equal(duelDecide(duelCheck({ now: '2026-11-20T18:30:00Z' })), 'in_progress');
-            assert.equal(duelDecide(duelCheck({ now: '2026-11-20T19:59:59Z' })), 'in_progress'); // last second
+            assert.equal(duelDecide(duelCheck({ now: '2026-11-20T18:30:00Z' })), null);
+            assert.equal(duelDecide(duelCheck({ now: '2026-11-20T19:59:59Z' })), null); // last second
         });
 
         test('is a draw once time runs out', () => {
@@ -35,13 +35,13 @@ describe('duelDecide', () => {
         test('player 1 wins right away, without waiting for time to run out', () => {
             const check = duelCheck({ now: '2026-11-20T18:45:00Z', player1Solved: '2026-11-20T18:40:00Z' });
 
-            assert.equal(duelDecide(check), 'player1_won');
+            assert.equal(duelDecide(check), 'player1');
         });
 
         test('player 2 wins right away, without waiting for time to run out', () => {
             const check = duelCheck({ now: '2026-11-20T18:45:00Z', player2Solved: '2026-11-20T18:40:00Z' });
 
-            assert.equal(duelDecide(check), 'player2_won');
+            assert.equal(duelDecide(check), 'player2');
         });
     });
 
@@ -54,7 +54,7 @@ describe('duelDecide', () => {
                 player2Solved: '2026-11-20T18:40:00Z',
             });
 
-            assert.equal(duelDecide(check), 'player2_won');
+            assert.equal(duelDecide(check), 'player2');
         });
 
         test('player 1 wins when they solved first', () => {
@@ -64,7 +64,7 @@ describe('duelDecide', () => {
                 player2Solved: '2026-11-20T18:42:00Z',
             });
 
-            assert.equal(duelDecide(check), 'player1_won');
+            assert.equal(duelDecide(check), 'player1');
         });
 
         test('is a draw when both solved in the same second', () => {
@@ -95,28 +95,28 @@ describe('duelDecide', () => {
             // rule: a solve that lands as time runs out still counts; only later solves don't.
             const check = duelCheck({ now: '2026-11-20T20:00:30Z', player1Solved: '2026-11-20T20:00:00Z' });
 
-            assert.equal(duelDecide(check), 'player1_won');
+            assert.equal(duelDecide(check), 'player1');
         });
 
         test('player 2: a solve in the exact second the timer hits 0 still wins', () => {
             // rule: a solve that lands as time runs out still counts; only later solves don't.
             const check = duelCheck({ now: '2026-11-20T20:00:30Z', player2Solved: '2026-11-20T20:00:00Z' });
 
-            assert.equal(duelDecide(check), 'player2_won');
+            assert.equal(duelDecide(check), 'player2');
         });
 
         test('player 1: a solve made in time still wins when it is only seen after time ran out', () => {
             // The server polls every so often, so a 19:59:50 solve may first be seen at 20:00:20.
             const check = duelCheck({ now: '2026-11-20T20:00:20Z', player1Solved: '2026-11-20T19:59:50Z' });
 
-            assert.equal(duelDecide(check), 'player1_won');
+            assert.equal(duelDecide(check), 'player1');
         });
 
         test('player 2: a solve made in time still wins when it is only seen after time ran out', () => {
             // The server polls every so often, so a 19:59:50 solve may first be seen at 20:00:20.
             const check = duelCheck({ now: '2026-11-20T20:00:20Z', player2Solved: '2026-11-20T19:59:50Z' });
 
-            assert.equal(duelDecide(check), 'player2_won');
+            assert.equal(duelDecide(check), 'player2');
         });
 
         test('the player who solved in time wins when the other solved too late', () => {
@@ -126,7 +126,7 @@ describe('duelDecide', () => {
                 player2Solved: '2026-11-20T19:30:00Z', // in time
             });
 
-            assert.equal(duelDecide(check), 'player2_won');
+            assert.equal(duelDecide(check), 'player2');
         });
     });
 });
