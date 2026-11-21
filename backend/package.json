@@ -16,7 +16,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/aliu3203/cfduel/issues"
   },
@@ -28,5 +28,6 @@
   },
   "devDependencies": {
     "supertest": "^7.3.2"
-  }
+  },
+  "engines": { "node": ">=20.11" }
 }

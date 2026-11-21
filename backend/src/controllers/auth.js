@@ -1,10 +1,10 @@
-const pool = require('../db');
-const bcrypt = require('bcrypt');
-const {validateRegister} = require('../validation/auth');
+import pool from '../db.js';
+import bcrypt from 'bcrypt';
+import {validateRegister} from '../validation/auth.js';
 
 const SALT_ROUNDS = 12; 
 
-async function register (req, res) {
+export async function register (req, res) {
     const {username, email, password} = req.body ?? {};
     
     //input validation
@@ -37,8 +37,3 @@ async function register (req, res) {
     
 }
 
-
-
-// exports
-
-module.exports = {register};
