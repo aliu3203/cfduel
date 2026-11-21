@@ -30,4 +30,18 @@ describe('duelDecide', () => {
             assert.equal(duelDecide(duelCheck({ now: '2026-11-20T20:45:00Z' })), 'draw');
         });
     });
+
+    describe('when one player has solved', () => {
+        test('player 1 wins right away, without waiting for time to run out', () => {
+            const check = duelCheck({ now: '2026-11-20T18:45:00Z', player1Solved: '2026-11-20T18:40:00Z' });
+
+            assert.equal(duelDecide(check), 'player1_won');
+        });
+
+        test('player 2 wins right away, without waiting for time to run out', () => {
+            const check = duelCheck({ now: '2026-11-20T18:45:00Z', player2Solved: '2026-11-20T18:40:00Z' });
+
+            assert.equal(duelDecide(check), 'player2_won');
+        });
+    });
 });
