@@ -117,6 +117,14 @@ function fakeCodeforcesReply(body, status = 200) {
     );
 }
 
+// Replaces the global fetch with a reply that is an HTML error page instead of JSON,
+// which is what Codeforces sends when it is down.
+function fakeCodeforcesOutage(status) {
+    return mock.method(globalThis, 'fetch', async () =>
+        new Response('<html>Codeforces is temporarily unavailable</html>', { status, headers: { 'Content-Type': 'text/html' } }),
+    );
+}
+
 describe('getFirstAcceptedSubmission', () => {
     afterEach(() => mock.restoreAll());
 
@@ -143,5 +151,24 @@ describe('getFirstAcceptedSubmission', () => {
         const requestedUrl = new URL(fetchMock.mock.calls[0].arguments[0]);
         assert.equal(requestedUrl.origin + requestedUrl.pathname, 'https://codeforces.com/api/user.status');
         assert.equal(requestedUrl.searchParams.get('handle'), 'alice');
+    });
+
+    test('throws with the Codeforces message when the handle does not exist', async () => {
+        // The exact reply Codeforces gives for an unknown handle (HTTP 400).
+        fakeCodeforcesReply({ status: 'FAILED', comment: 'handle: User with handle nobody not found' }, 400);
+
+        await assert.rejects(
+            getFirstAcceptedSubmission('nobody', '1850A', START),
+            /User with handle nobody not found/,
+        );
+    });
+
+    test('throws a clear error when Codeforces is down', async () => {
+        fakeCodeforcesOutage(503);
+
+        await assert.rejects(
+            getFirstAcceptedSubmission('alice', '1850A', START),
+            /Codeforces .*503/,
+        );
     });
 });
