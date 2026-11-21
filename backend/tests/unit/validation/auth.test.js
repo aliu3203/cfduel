@@ -1,6 +1,6 @@
-const {describe, test} = require('node:test');
-const assert = require('node:assert/strict');
-const { validateRegister } = require('../../../src/validation/auth');
+import { describe, test } from 'node:test';
+import assert from 'node:assert/strict';
+import { validateRegister } from '../../../src/validation/auth.js';
 
 describe('validateRegister', () => {
     const valid = { username: 'andrew', email: 'aliu3203@gmail.com', password: '12345678'};

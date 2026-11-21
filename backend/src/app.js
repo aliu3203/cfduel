@@ -1,12 +1,13 @@
-const express = require('express');
+import express from 'express';
+import router from './routes/index.js';
+
 const app = express();
 
 app.use(express.json());
 
-const router = require('./routes');
 
 // !!!!! IMPORTANT !!!!!!!!
 // This should mount to /api or something similar in the future
 app.use('/', router);
 
-module.exports = app;
+export default app;
