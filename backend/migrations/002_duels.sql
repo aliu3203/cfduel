@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS citext;
+
 -- KEY ASSUMPTIONS:
 -- Store ALL active + completed duels
 -- Usernames and their corresponding cf_handles are immutable, will never change
@@ -48,7 +50,7 @@ CREATE TABLE IF NOT EXISTS duels (
     CHECK (
         status NOT IN ('active', 'finished')
         OR started_at IS NOT NULL
-    )
+    ),
 
     -- Finished duels must have a result
     CHECK (

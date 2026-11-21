@@ -39,9 +39,37 @@ cd backend
 npm install
 cp .env.example .env
 # Set DATABASE_URL in .env
+docker start cfduel-postgres
 docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/001_users.sql
 docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/002_duels.sql
 ```
+
+### Resetting the database (local development only)
+
+**WARNING: The following commands permanently delete ALL data in the local `cfduel` database, including users, duels, and other records. Only use these commands for local development/testing. Never run them against a production or shared database.**
+
+#### Mac
+
+```bash
+dropdb cfduel
+createdb cfduel
+psql -d cfduel -v ON_ERROR_STOP=1 -f migrations/001_users.sql
+psql -d cfduel -v ON_ERROR_STOP=1 -f migrations/002_duels.sql
+```
+
+#### Windows (Git Bash + Docker)
+
+```bash
+docker start cfduel-postgres
+docker exec cfduel-postgres dropdb -U postgres cfduel
+docker exec cfduel-postgres createdb -U postgres cfduel
+docker exec -i cfduel-postgres psql -U postgres -d cfduel -v ON_ERROR_STOP=1 < migrations/001_users.sql
+docker exec -i cfduel-postgres psql -U postgres -d cfduel -v ON_ERROR_STOP=1 < migrations/002_duels.sql
+```
+
+**Note:** Stop your backend server before resetting the database. Active connections can prevent `dropdb` from succeeding.
+
+These commands reset only the `cfduel` database, not `cfduel_test` or other PostgreSQL databases.
 
 ### Running the server
 
