@@ -1,3 +1,4 @@
+
 import { describe, test, before, beforeEach, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -12,11 +13,21 @@ const valid = {
     password: 'correct-horse'
 };
 
-const register = (body) =>
-    request(app).post('/auth/register').send(body);
+const ORIGIN = 'http://localhost:5173';
 
-const login = (body) =>
-    request(app).post('/auth/login').send(body);
+const register = (body) =>
+    request(app).post('/auth/register')
+        .set('Origin', ORIGIN)
+        .send(body);
+
+const login = (body, client = request(app)) =>
+    client.post('/auth/login')
+        .set('Origin', ORIGIN)
+        .send(body);
+
+const logout = (client) =>
+    client.post('/auth/logout')
+        .set('Origin', ORIGIN);
 
 // Build the schema once from the migration, then empty the users table before every test.
 before(async () => {
@@ -66,4 +77,96 @@ describe('POST /auth/login', () => {
 
         assert.equal(res.status, 401);
     });
+
+    // JWT TESTS
+    test('successful login issues a JWT cookie', async () => {
+        const res = await login({
+            username: 'alice',
+            password: 'correct-horse'
+        });
+
+        assert.equal(res.status, 200);
+
+        const cookies = res.headers['set-cookie'];
+        assert.ok(cookies);
+        assert.ok(cookies.some(cookie =>
+            cookie.startsWith('token=') &&
+            cookie.includes('HttpOnly')
+        ));
+    });
+
+    test('authenticated user can access /auth/me', async () => {
+        const agent = request.agent(app);
+
+        const loginRes = await login({
+            username: 'alice',
+            password: 'correct-horse'
+        }, agent);
+
+        assert.equal(loginRes.status, 200);
+
+        const res = await agent.get('/auth/me');
+
+        assert.equal(res.status, 200);
+        assert.equal(res.body.username, 'alice');
+        assert.equal(res.body.rating, 1000);
+        assert.equal(res.body.cfHandle, null);
+        assert.equal(res.body.password_hash, undefined);
+    });
+
+    test('unauthenticated user cannot access /auth/me', async () => {
+        const res = await request(app).get('/auth/me');
+
+        assert.equal(res.status, 401);
+    });
+
+    test('logout removes the authentication cookie', async () => {
+        const agent = request.agent(app);
+
+        await login({
+            username: 'alice',
+            password: 'correct-horse'
+        }, agent);
+
+        const beforeLogout = await agent.get('/auth/me');
+        assert.equal(beforeLogout.status, 200);
+
+        const logoutRes = await logout(agent);
+        assert.equal(logoutRes.status, 200);
+
+        const afterLogout = await agent.get('/auth/me');
+        assert.equal(afterLogout.status, 401);
+
+        assert.ok(logoutRes.headers['set-cookie']?.some(cookie =>
+            cookie.startsWith('token=') && cookie.includes('Expires=')
+        ));
+    });
+
+    test('failed login does not authenticate the user', async () => {
+        const agent = request.agent(app);
+
+        const loginRes = await login({
+            username: 'alice',
+            password: 'wrong-password'
+        }, agent);
+
+        assert.equal(loginRes.status, 401);
+        assert.equal(loginRes.headers['set-cookie'], undefined);
+
+        const res = await agent.get('/auth/me');
+        assert.equal(res.status, 401);
+    });
+
+    test('rejects requests from an untrusted origin', async () => {
+        const res = await request(app)
+            .post('/auth/login')
+            .set('Origin', 'https://evil.example')
+            .send({
+                username: 'alice',
+                password: 'correct-horse'
+            });
+
+        assert.equal(res.status, 403);
+    });
+
 });

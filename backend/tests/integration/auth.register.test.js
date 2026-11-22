@@ -7,7 +7,10 @@ import app from '../../src/app.js';
 import pool from '../../src/db.js';
 
 const valid = { username: 'alice', email: 'alice@example.com', password: 'correct-horse' };
-const register = (body) => request(app).post('/auth/register').send(body);
+const register = (body) =>
+    request(app).post('/auth/register')
+        .set('Origin', 'http://localhost:5173')
+        .send(body);
 
 // Build the schema once from the migration, then empty the users table before every test.
 before(async () => {

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
 import Homepage from "./HomePage";
@@ -7,6 +7,22 @@ import Homepage from "./HomePage";
 export default function App() {
     const [page, setPage] = useState("login");
     const [user, setUser] = useState(null);
+
+    const [checkingSession, setCheckingSession] = useState(true);
+
+    useEffect(() => {
+        fetch("http://localhost:3000/auth/me", {
+            credentials: "include"
+        })
+            .then(res => res.ok ? res.json() : null)
+            .then(setUser) // set the user to res.json()
+            .catch(console.error)
+            .finally(() => setCheckingSession(false));
+    }, []); // run once on mount []
+
+    if (checkingSession) {
+        return <p>Loading...</p>;
+    }
 
     if (user) {
         return (

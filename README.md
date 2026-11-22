@@ -87,13 +87,13 @@ Tests use a separate database, `cfduel_test`, which they wipe and rebuild on eve
 createdb cfduel_test
 ```
 
-Create `backend/.env.test` (gitignored), with `USER` replaced by your username:
+Create `backend/.env.test` (gitignored), with `USER` replaced by your username (postgres for windows):
 
-```
+```env
 DATABASE_URL=postgres://USER@localhost:5432/cfduel_test
 NODE_ENV=test
+JWT_SECRET=your-test-jwt-secret
 ```
-
 Then:
 
 ```bash
@@ -101,7 +101,6 @@ npm test                      # all tests
 npm run test:unit             # unit tests only (no database needed)
 npm run test:integration      # integration tests only (Postgres must be running)
 ```
-
 ## Frontend
 
 ```bash
