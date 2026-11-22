@@ -45,4 +45,45 @@ describe('checkDuel', () => {
             ]);
         });
     });
+
+    describe('when a player has solved', () => {
+        test('player 1 wins: the duel ends now and their solve time is saved', async () => {
+            fakeSolves({ alice: '2026-11-20T18:40:00Z' });
+
+            const update = await checkDuel(DUEL, new Date('2026-11-20T18:40:30Z'));
+
+            assert.deepEqual(update, {
+                result: 'player1',
+                ended_at: new Date('2026-11-20T18:40:30Z'),
+                player1_submission_at: new Date('2026-11-20T18:40:00Z'),
+                player2_submission_at: null,
+            });
+        });
+
+        test('player 2 wins: the duel ends now and their solve time is saved', async () => {
+            fakeSolves({ bob: '2026-11-20T18:40:00Z' });
+
+            const update = await checkDuel(DUEL, new Date('2026-11-20T18:40:30Z'));
+
+            assert.deepEqual(update, {
+                result: 'player2',
+                ended_at: new Date('2026-11-20T18:40:30Z'),
+                player1_submission_at: null,
+                player2_submission_at: new Date('2026-11-20T18:40:00Z'),
+            });
+        });
+
+        test('when both solved before we checked, the earlier one wins and both times are saved', async () => {
+            fakeSolves({ alice: '2026-11-20T18:42:00Z', bob: '2026-11-20T18:40:00Z' });
+
+            const update = await checkDuel(DUEL, new Date('2026-11-20T18:42:30Z'));
+
+            assert.deepEqual(update, {
+                result: 'player2',
+                ended_at: new Date('2026-11-20T18:42:30Z'),
+                player1_submission_at: new Date('2026-11-20T18:42:00Z'),
+                player2_submission_at: new Date('2026-11-20T18:40:00Z'),
+            });
+        });
+    });
 });
