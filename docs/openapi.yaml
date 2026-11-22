@@ -50,3 +50,101 @@ paths:
           description: Username or email already taken
         '500':
           description: Every other errors
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Log in to an existing account
+      description: Validates credentials and issues a JWT in an HttpOnly cookie.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                  description: Registered username
+                password:
+                  type: string
+                  description: Account password
+      responses:
+        '200':
+          description: Login successful; authentication cookie issued
+          headers:
+            Set-Cookie:
+              description: JWT authentication cookie
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  username:
+                    type: string
+                  rating:
+                    type: integer
+        '400':
+          description: Missing or invalid input
+        '401':
+          description: Incorrect username or password
+        '403':
+          description: Untrusted request origin
+        '500':
+          description: Internal server error
+          
+  # REQUIRES COOKIE!!!! credentials: "include" in react
+  /auth/me:
+    get:
+      tags: [auth]
+      summary: Get the currently authenticated user
+      description: Verifies the JWT cookie and retrieves the current user profile from PostgreSQL.
+      security:
+        - cookieAuth: [] 
+      responses:
+        '200':
+          description: Authenticated user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  username:
+                    type: string
+                  cfHandle:
+                    type:
+                      - string
+                      - 'null'
+                  rating:
+                    type: integer
+        '401':
+          description: Missing, invalid, or expired JWT, or user no longer exists
+        '500':
+          description: Internal server error
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Log out of the current account
+      description: Clears the JWT authentication cookie from the browser.
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logged out
+        '403':
+          description: Untrusted request origin
+
