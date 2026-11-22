@@ -13,6 +13,17 @@ const DUEL = {
     player2_handle: 'bob',
 };
 
+// Replaces getFirstAcceptedSubmission with one that fails for `failingHandle` the way the real one does
+// (e.g. when Codeforces is down or rate-limits us) and says nobody else has solved.
+function fakeCodeforcesFailure(failingHandle) {
+    return mock.method(codeforces, 'getFirstAcceptedSubmission', async (handle) => {
+        if (handle === failingHandle) {
+            throw new Error('Codeforces API error: Call limit exceeded');
+        }
+        return null;
+    });
+}
+
 // Replaces getFirstAcceptedSubmission so tests never call Codeforces (it has its own tests).
 // `solveTimes` maps a handle to when that player solved; players left out haven't solved.
 function fakeSolves(solveTimes) {
@@ -126,6 +137,33 @@ describe('checkDuel', () => {
                 player1_submission_at: null,
                 player2_submission_at: new Date('2026-11-20T19:59:50Z'),
             });
+        });
+    });
+
+    // If we can't reach Codeforces we don't know who solved, so checkDuel must not guess a result.
+    // It fails instead, and the duel is checked again on the next poll.
+    describe('when Codeforces fails', () => {
+        test('fails with the Codeforces error', async () => {
+            fakeCodeforcesFailure('bob');
+
+            await assert.rejects(
+                checkDuel(DUEL, new Date('2026-11-20T18:30:00Z')),
+                /Call limit exceeded/,
+            );
+        });
+
+        test('does not call a draw after time runs out, since a player may have solved in time', async () => {
+            fakeCodeforcesFailure('alice');
+
+            await assert.rejects(checkDuel(DUEL, new Date('2026-11-20T20:00:30Z')));
+        });
+
+        test("stops after the first failure instead of also asking about the other player", async () => {
+            const fake = fakeCodeforcesFailure('alice');
+
+            await assert.rejects(checkDuel(DUEL, new Date('2026-11-20T18:30:00Z')));
+
+            assert.equal(fake.mock.callCount(), 1);
         });
     });
 });
