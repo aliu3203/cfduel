@@ -16,7 +16,7 @@ function parseProblemId(problemId) {
 
 // Returns when the user first solved the problem at or after startTime, or null if they haven't.
 // Codeforces records times in whole seconds, so a solve in the same second as the start counts.
-function findFirstAcceptedSubmission(submissions, problemId, startTime) {
+export function findFirstAcceptedSubmission(submissions, problemId, startTime) {
     const problem = parseProblemId(problemId);
     const startSeconds = Math.floor(startTime.getTime() / 1000);
 
@@ -37,7 +37,7 @@ function findFirstAcceptedSubmission(submissions, problemId, startTime) {
 
 // Fetches the user's recent submissions from Codeforces and returns when they first solved
 // the problem at or after startTime, or null if they haven't.
-async function getFirstAcceptedSubmission(handle, problemId, startTime) {
+export async function getFirstAcceptedSubmission(handle, problemId, startTime) {
     const url = new URL('https://codeforces.com/api/user.status');
     url.searchParams.set('handle', handle);
     url.searchParams.set('from', '1');
@@ -59,5 +59,3 @@ async function getFirstAcceptedSubmission(handle, problemId, startTime) {
 
     return findFirstAcceptedSubmission(body.result, problemId, startTime);
 }
-
-module.exports = { findFirstAcceptedSubmission, getFirstAcceptedSubmission };

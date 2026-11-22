@@ -1,6 +1,6 @@
-const { describe, test } = require('node:test');
-const assert = require('node:assert/strict');
-const { duelDecide } = require('../../../src/services/duel');
+import { describe, test } from 'node:test';
+import assert from 'node:assert/strict';
+import { duelDecide } from '../../../src/services/duel.js';
 
 // Every test uses the same duel: it starts at 18:00:00 UTC and lasts 2 hours, so it ends at 20:00:00.
 const START = new Date('2026-11-20T18:00:00Z');

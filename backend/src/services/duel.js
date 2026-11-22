@@ -2,7 +2,7 @@
 
 // Returns the winner ('player1' or 'player2'), 'draw', or null while the duel is still going.
 // These match the values stored in the duels table's result column.
-function duelDecide({ startTime, durationSeconds, now, player1SolveTime, player2SolveTime }) {
+export function duelDecide({ startTime, durationSeconds, now, player1SolveTime, player2SolveTime }) {
     const endTime = new Date(startTime.getTime() + durationSeconds * 1000);
 
     // A solve counts if it landed by the time the timer hit 0, even if we only see it later.
@@ -29,5 +29,3 @@ function duelDecide({ startTime, durationSeconds, now, player1SolveTime, player2
     }
     return null; // still going
 }
-
-module.exports = { duelDecide };
