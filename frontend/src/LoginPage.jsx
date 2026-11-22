@@ -36,7 +36,7 @@ function LoginButton({ loading }) {
     );
 }
 
-export default function LoginPage() {
+export default function LoginPage({ onLogin }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -60,8 +60,8 @@ export default function LoginPage() {
                 setError("Invalid username or password");
                 return;
             }
-
-            alert("Login successful");
+            const userData = await response.json();
+            onLogin(userData);
 
         } catch (err) {
             setError("Cannot connect to server");
