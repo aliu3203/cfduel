@@ -25,4 +25,4 @@ function validateRegister( {username, email, password} ){
 }
 
 
-module.exports = {validateRegister};
+export default validateRegister;

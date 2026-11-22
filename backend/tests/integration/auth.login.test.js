@@ -1,12 +1,10 @@
+import { describe, test, before, beforeEach, after } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import request from 'supertest';
 
-const { describe, test, before, beforeEach, after } = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const request = require('supertest');
-
-const app = require('../../src/app');
-const pool = require('../../src/db');
+import app from '../../src/app.js';
+import pool from '../../src/db.js';
 
 const valid = {
     username: 'alice',
@@ -27,7 +25,7 @@ before(async () => {
         throw new Error(`refusing to wipe "${rows[0].db}": use a database ending in _test`);
     }
     await pool.query('DROP TABLE IF EXISTS users');
-    const migration = path.join(__dirname, '../../migrations/001_users.sql');
+    const migration = new URL('../../migrations/001_users.sql', import.meta.url);
     await pool.query(fs.readFileSync(migration, 'utf8'));
 });
 
