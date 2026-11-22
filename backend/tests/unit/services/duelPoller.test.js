@@ -1,7 +1,6 @@
-const { describe, test, mock, afterEach } = require('node:test');
-const assert = require('node:assert/strict');
-const codeforces = require('../../../src/services/codeforces');
-const { checkDuel } = require('../../../src/services/duelPoller');
+import { describe, test, mock } from 'node:test';
+import assert from 'node:assert/strict';
+import { checkDuel } from '../../../src/services/duelPoller.js';
 
 // Every test checks the same duel: problem 1850A between alice and bob, from 18:00 to 20:00 UTC.
 // It has the shape of a duels row joined with both players' Codeforces handles.
@@ -13,10 +12,10 @@ const DUEL = {
     player2_handle: 'bob',
 };
 
-// Replaces getFirstAcceptedSubmission with one that fails for `failingHandle` the way the real one does
+// A stand-in for getFirstAcceptedSubmission that fails for `failingHandle` the way the real one does
 // (e.g. when Codeforces is down or rate-limits us) and says nobody else has solved.
 function fakeCodeforcesFailure(failingHandle) {
-    return mock.method(codeforces, 'getFirstAcceptedSubmission', async (handle) => {
+    return mock.fn(async (handle) => {
         if (handle === failingHandle) {
             throw new Error('Codeforces API error: Call limit exceeded');
         }
@@ -24,22 +23,20 @@ function fakeCodeforcesFailure(failingHandle) {
     });
 }
 
-// Replaces getFirstAcceptedSubmission so tests never call Codeforces (it has its own tests).
+// A stand-in for getFirstAcceptedSubmission, so tests never call Codeforces (it has its own tests).
 // `solveTimes` maps a handle to when that player solved; players left out haven't solved.
 function fakeSolves(solveTimes) {
-    return mock.method(codeforces, 'getFirstAcceptedSubmission', async (handle) =>
+    return mock.fn(async (handle) =>
         solveTimes[handle] ? new Date(solveTimes[handle]) : null,
     );
 }
 
 describe('checkDuel', () => {
-    afterEach(() => mock.restoreAll());
-
     describe('while the duel is still going', () => {
         test('returns null because there is nothing to save yet', async () => {
-            fakeSolves({});
+            const fake = fakeSolves({});
 
-            const update = await checkDuel(DUEL, new Date('2026-11-20T18:30:00Z'));
+            const update = await checkDuel(DUEL, new Date('2026-11-20T18:30:00Z'), fake);
 
             assert.equal(update, null);
         });
@@ -47,7 +44,7 @@ describe('checkDuel', () => {
         test("asks Codeforces about both players, for the duel's problem since it started", async () => {
             const fake = fakeSolves({});
 
-            await checkDuel(DUEL, new Date('2026-11-20T18:30:00Z'));
+            await checkDuel(DUEL, new Date('2026-11-20T18:30:00Z'), fake);
 
             const requests = fake.mock.calls.map((call) => call.arguments);
             assert.deepEqual(requests, [
@@ -59,9 +56,9 @@ describe('checkDuel', () => {
 
     describe('when a player has solved', () => {
         test('player 1 wins: the duel ends now and their solve time is saved', async () => {
-            fakeSolves({ alice: '2026-11-20T18:40:00Z' });
+            const fake = fakeSolves({ alice: '2026-11-20T18:40:00Z' });
 
-            const update = await checkDuel(DUEL, new Date('2026-11-20T18:40:30Z'));
+            const update = await checkDuel(DUEL, new Date('2026-11-20T18:40:30Z'), fake);
 
             assert.deepEqual(update, {
                 result: 'player1',
@@ -72,9 +69,9 @@ describe('checkDuel', () => {
         });
 
         test('player 2 wins: the duel ends now and their solve time is saved', async () => {
-            fakeSolves({ bob: '2026-11-20T18:40:00Z' });
+            const fake = fakeSolves({ bob: '2026-11-20T18:40:00Z' });
 
-            const update = await checkDuel(DUEL, new Date('2026-11-20T18:40:30Z'));
+            const update = await checkDuel(DUEL, new Date('2026-11-20T18:40:30Z'), fake);
 
             assert.deepEqual(update, {
                 result: 'player2',
@@ -85,9 +82,9 @@ describe('checkDuel', () => {
         });
 
         test('when both solved before we checked, the earlier one wins and both times are saved', async () => {
-            fakeSolves({ alice: '2026-11-20T18:42:00Z', bob: '2026-11-20T18:40:00Z' });
+            const fake = fakeSolves({ alice: '2026-11-20T18:42:00Z', bob: '2026-11-20T18:40:00Z' });
 
-            const update = await checkDuel(DUEL, new Date('2026-11-20T18:42:30Z'));
+            const update = await checkDuel(DUEL, new Date('2026-11-20T18:42:30Z'), fake);
 
             assert.deepEqual(update, {
                 result: 'player2',
@@ -101,9 +98,9 @@ describe('checkDuel', () => {
     // The duel runs from 18:00 to 20:00, so a solve after 20:00:00 doesn't count.
     describe('when time runs out', () => {
         test('nobody solved: the duel ends as a draw', async () => {
-            fakeSolves({});
+            const fake = fakeSolves({});
 
-            const update = await checkDuel(DUEL, new Date('2026-11-20T20:00:30Z'));
+            const update = await checkDuel(DUEL, new Date('2026-11-20T20:00:30Z'), fake);
 
             assert.deepEqual(update, {
                 result: 'draw',
@@ -114,9 +111,9 @@ describe('checkDuel', () => {
         });
 
         test('a solve after the timer hit 0 is a draw and its time is not saved', async () => {
-            fakeSolves({ alice: '2026-11-20T20:00:10Z' });
+            const fake = fakeSolves({ alice: '2026-11-20T20:00:10Z' });
 
-            const update = await checkDuel(DUEL, new Date('2026-11-20T20:00:30Z'));
+            const update = await checkDuel(DUEL, new Date('2026-11-20T20:00:30Z'), fake);
 
             assert.deepEqual(update, {
                 result: 'draw',
@@ -127,9 +124,9 @@ describe('checkDuel', () => {
         });
 
         test('the player who solved in time wins, and the late solve is not saved', async () => {
-            fakeSolves({ alice: '2026-11-20T20:00:10Z', bob: '2026-11-20T19:59:50Z' });
+            const fake = fakeSolves({ alice: '2026-11-20T20:00:10Z', bob: '2026-11-20T19:59:50Z' });
 
-            const update = await checkDuel(DUEL, new Date('2026-11-20T20:00:30Z'));
+            const update = await checkDuel(DUEL, new Date('2026-11-20T20:00:30Z'), fake);
 
             assert.deepEqual(update, {
                 result: 'player2',
@@ -144,24 +141,24 @@ describe('checkDuel', () => {
     // It fails instead, and the duel is checked again on the next poll.
     describe('when Codeforces fails', () => {
         test('fails with the Codeforces error', async () => {
-            fakeCodeforcesFailure('bob');
+            const fake = fakeCodeforcesFailure('bob');
 
             await assert.rejects(
-                checkDuel(DUEL, new Date('2026-11-20T18:30:00Z')),
+                checkDuel(DUEL, new Date('2026-11-20T18:30:00Z'), fake),
                 /Call limit exceeded/,
             );
         });
 
         test('does not call a draw after time runs out, since a player may have solved in time', async () => {
-            fakeCodeforcesFailure('alice');
+            const fake = fakeCodeforcesFailure('alice');
 
-            await assert.rejects(checkDuel(DUEL, new Date('2026-11-20T20:00:30Z')));
+            await assert.rejects(checkDuel(DUEL, new Date('2026-11-20T20:00:30Z'), fake));
         });
 
         test("stops after the first failure instead of also asking about the other player", async () => {
             const fake = fakeCodeforcesFailure('alice');
 
-            await assert.rejects(checkDuel(DUEL, new Date('2026-11-20T18:30:00Z')));
+            await assert.rejects(checkDuel(DUEL, new Date('2026-11-20T18:30:00Z'), fake));
 
             assert.equal(fake.mock.callCount(), 1);
         });
