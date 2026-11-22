@@ -53,6 +53,7 @@ export default function LoginPage({ onLogin }) {
                 headers: {
                     "Content-Type": "application/json"
                 },
+                credentials: "include",
                 body: JSON.stringify({ username, password })
             });
 
