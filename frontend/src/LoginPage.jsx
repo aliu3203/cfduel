@@ -1,43 +1,89 @@
 import { useState } from "react";
 
-function UsernameBox() {
+function UsernameBox({ username, setUsername }) {
     return (
         <label>
-            Username: 
-            <input> 
-
-            </input>
+            Username:
+            <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+            />
         </label>
     );
 }
 
-function PasswordBox() {
+function PasswordBox({ password, setPassword }) {
     return (
-        <label> Password:
-            <input>
-
-            </input>
+        <label>
+            Password:
+            <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+            />
         </label>
-
     );
 }
 
-function LoginButton() {
-    function handleClick(){
-        alert("login")
-    };
-
-    return (<button onClick={handleClick}>
-        Login
-    </button>);
+function LoginButton({ loading }) {
+    return (
+        <button type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+        </button>
+    );
 }
 
 export default function LoginPage() {
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        setError("");
+        setLoading(true);
+
+        try {
+            const response = await fetch("http://localhost:3000/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (!response.ok) {
+                setError("Invalid username or password");
+                return;
+            }
+
+            alert("Login successful");
+
+        } catch (err) {
+            setError("Cannot connect to server");
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
-        <form>
-            <UsernameBox />
-            <PasswordBox />
-            <LoginButton />
+        <form onSubmit={handleSubmit}>
+            <UsernameBox
+                username={username}
+                setUsername={setUsername}
+            />
+            <PasswordBox
+                password={password}
+                setPassword={setPassword}
+            />
+            <LoginButton loading={loading} />
+
+            {error && <p>{error}</p>}
         </form>
     );
 }
