@@ -1,7 +1,7 @@
 import { Router } from 'express';
-const router = Router();
-
 import authRoutes from './auth.js';
+
+const router = Router();
 
 // implement api routes here, callbacks should go into
 // separate folder src/controllers

@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import requireTrustedOrigin from './middleware/csrf.js';
+import router from './routes/index.js';
 const app = express();
 
 // Handle cors immediately
@@ -14,7 +15,6 @@ app.use(cookieParser());
 app.use(express.json());
 
 
-import router from './routes/index.js';
 
 // !!!!! IMPORTANT !!!!!!!!
 // This should mount to /api or something similar in the future

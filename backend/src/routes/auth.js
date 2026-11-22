@@ -1,7 +1,7 @@
 import { Router } from 'express';
-const router = Router();
 import * as auth from '../controllers/auth.js';
 import requireAuth from '../middleware/auth.js';
+const router = Router();
 
 router.post('/register', auth.register);
 router.post('/login', auth.login);
