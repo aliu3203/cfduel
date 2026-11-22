@@ -22,12 +22,22 @@ async function checkDuel(duel, now) {
         return null;
     }
 
+    // Only save solves that counted, so a solve after the timer hit 0 isn't mistaken for a real one.
+    const endTime = new Date(duel.started_at.getTime() + duel.duration_seconds * 1000);
     return {
         result,
         ended_at: now,
-        player1_submission_at: player1SolveTime,
-        player2_submission_at: player2SolveTime,
+        player1_submission_at: solveThatCounted(player1SolveTime, endTime),
+        player2_submission_at: solveThatCounted(player2SolveTime, endTime),
     };
+}
+
+// Returns the solve time if it landed by the end of the duel, or null if there was none or it came too late.
+function solveThatCounted(solveTime, endTime) {
+    if (solveTime && solveTime <= endTime) {
+        return solveTime;
+    }
+    return null;
 }
 
 module.exports = { checkDuel };
