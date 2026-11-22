@@ -1,6 +1,7 @@
-const router = require('express').Router();
+import { Router } from 'express';
+import authRoutes from './auth.js';
 
-const authRoutes = require('./auth');
+const router = Router();
 
 // implement api routes here, callbacks should go into
 // separate folder src/controllers
@@ -11,4 +12,4 @@ router.get('/', (req, res) => {
     res.send("Hello World!");
 });
 
-module.exports = router;
+export default router;

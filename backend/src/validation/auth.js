@@ -1,7 +1,7 @@
 const USER_RE = /^[a-zA-Z0-9_]{3,30}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function validateRegister( {username, email, password} ){
+export function validateRegister( {username, email, password} ){
     if(typeof username !== 'string'){
         return "username is required";
     }
@@ -23,6 +23,3 @@ function validateRegister( {username, email, password} ){
     }
     return null;
 }
-
-
-module.exports = {validateRegister};
