@@ -1,6 +1,8 @@
-const router = require('express').Router();
-const duel = require('../controllers/duel');
+import { Router } from 'express';
+import * as duel from '../controllers/duel.js';
+
+const router = Router();
 
 router.get('/history', duel.history);
 
-module.exports = router;
+export default router;
