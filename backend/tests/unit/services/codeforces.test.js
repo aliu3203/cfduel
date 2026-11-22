@@ -1,6 +1,6 @@
-const { describe, test, mock, afterEach } = require('node:test');
-const assert = require('node:assert/strict');
-const { findFirstAcceptedSubmission, getFirstAcceptedSubmission } = require('../../../src/services/codeforces');
+import { describe, test, mock, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
+import { findFirstAcceptedSubmission, getFirstAcceptedSubmission } from '../../../src/services/codeforces.js';
 
 // Duel start used throughout: 2026-11-20 18:00:00 UTC (= 1795197600 in Unix seconds).
 const START = new Date('2026-11-20T18:00:00Z');
