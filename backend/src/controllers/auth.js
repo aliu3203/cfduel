@@ -1,6 +1,7 @@
 import pool from '../db.js';
 import bcrypt from 'bcrypt';
 import validateRegister from '../validation/auth.js';
+import jwt from 'jsonwebtoken';
 
 const SALT_ROUNDS = 12; 
 
@@ -64,6 +65,21 @@ async function login(req, res) {
         if (!valid) {
             return res.status(401).json({ error: "Invalid username or password" });
         }
+        
+        // JWT: send the user a cookie
+        const token = jwt.sign(
+            { userId: user.id },
+            process.env.JWT_SECRET, // server signs the cookie
+            { expiresIn: '24h' } // token lifetime = cookie lifetime
+        );
+        
+        res.cookie('token', token, {
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production', // during testing, cookies can be sent over insecure http
+            maxAge: 24 * 60 * 60 * 1000 // in milliseconds (1 day)
+        });
+        // there is a set-cookie header in the response by this point
 
         return res.status(200).json({
             id: user.id,
