@@ -86,4 +86,46 @@ describe('checkDuel', () => {
             });
         });
     });
+
+    // The duel runs from 18:00 to 20:00, so a solve after 20:00:00 doesn't count.
+    describe('when time runs out', () => {
+        test('nobody solved: the duel ends as a draw', async () => {
+            fakeSolves({});
+
+            const update = await checkDuel(DUEL, new Date('2026-11-20T20:00:30Z'));
+
+            assert.deepEqual(update, {
+                result: 'draw',
+                ended_at: new Date('2026-11-20T20:00:30Z'),
+                player1_submission_at: null,
+                player2_submission_at: null,
+            });
+        });
+
+        test('a solve after the timer hit 0 is a draw and its time is not saved', async () => {
+            fakeSolves({ alice: '2026-11-20T20:00:10Z' });
+
+            const update = await checkDuel(DUEL, new Date('2026-11-20T20:00:30Z'));
+
+            assert.deepEqual(update, {
+                result: 'draw',
+                ended_at: new Date('2026-11-20T20:00:30Z'),
+                player1_submission_at: null,
+                player2_submission_at: null,
+            });
+        });
+
+        test('the player who solved in time wins, and the late solve is not saved', async () => {
+            fakeSolves({ alice: '2026-11-20T20:00:10Z', bob: '2026-11-20T19:59:50Z' });
+
+            const update = await checkDuel(DUEL, new Date('2026-11-20T20:00:30Z'));
+
+            assert.deepEqual(update, {
+                result: 'player2',
+                ended_at: new Date('2026-11-20T20:00:30Z'),
+                player1_submission_at: null,
+                player2_submission_at: new Date('2026-11-20T19:59:50Z'),
+            });
+        });
+    });
 });
