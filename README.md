@@ -44,6 +44,15 @@ docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/001_users
 docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/002_duels.sql
 ```
 
+After copying .env.example to .env, set JWT_SECRET to a randomly generated secret. The backend will not start without it.
+
+Generate a secret using:
+```
+node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+```
+
+Change FRONTEND_ORIGIN to the origin you use in development/deployment (eg 127.0.0.1:5173).
+
 ### Resetting the database (local development only)
 
 **WARNING: The following commands permanently delete ALL data in the local `cfduel` database, including users, duels, and other records. Only use these commands for local development/testing. Never run them against a production or shared database.**
@@ -87,13 +96,13 @@ Tests use a separate database, `cfduel_test`, which they wipe and rebuild on eve
 createdb cfduel_test
 ```
 
-Create `backend/.env.test` (gitignored), with `USER` replaced by your username:
+Create `backend/.env.test` (gitignored), with `USER` replaced by your username (postgres for windows):
 
-```
+```env
 DATABASE_URL=postgres://USER@localhost:5432/cfduel_test
 NODE_ENV=test
+JWT_SECRET=your-test-jwt-secret
 ```
-
 Then:
 
 ```bash
@@ -101,7 +110,6 @@ npm test                      # all tests
 npm run test:unit             # unit tests only (no database needed)
 npm run test:integration      # integration tests only (Postgres must be running)
 ```
-
 ## Frontend
 
 ```bash
