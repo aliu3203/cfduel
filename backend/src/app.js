@@ -7,7 +7,7 @@ const app = express();
 
 // Handle cors immediately
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.FRONTEND_ORIGIN,
     credentials: true
 }));
 app.use(requireTrustedOrigin);

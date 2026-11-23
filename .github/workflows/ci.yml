@@ -33,6 +33,7 @@ jobs:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/cfduel_test
       NODE_ENV: test
       JWT_SECRET: ci-only-test-secret
+      FRONTEND_ORIGIN: http://localhost:5173
 
     steps:
       - uses: actions/checkout@v6

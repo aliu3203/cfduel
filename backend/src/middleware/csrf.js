@@ -1,4 +1,4 @@
-const ALLOWED_ORIGIN = 'http://localhost:5173';
+const ALLOWED_ORIGIN = process.env.FRONTEND_ORIGIN;
 
 // make sure that backend requests originate exactly from the frontend
 function requireTrustedOrigin(req, res, next) {

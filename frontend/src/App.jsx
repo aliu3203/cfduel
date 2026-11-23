@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
-import Homepage from "./HomePage";
+import HomePage from "./HomePage";
+
 
 export default function App() {
     const [page, setPage] = useState("login");
@@ -26,7 +27,7 @@ export default function App() {
 
     if (user) {
         return (
-            <Homepage
+            <HomePage
                 user={user}
                 onLogout={() => setUser(null)}
             />

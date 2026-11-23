@@ -19,7 +19,7 @@ before(async () => {
     if (!rows[0].db.endsWith('_test')) {
         throw new Error(`refusing to wipe "${rows[0].db}": use a database ending in _test`);
     }
-    await pool.query('DROP TABLE IF EXISTS users');
+    await pool.query('DROP TABLE IF EXISTS duels, users');
     const migration = new URL('../../migrations/001_users.sql', import.meta.url);
     await pool.query(fs.readFileSync(migration, 'utf8'));
 });

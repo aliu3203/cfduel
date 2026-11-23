@@ -44,6 +44,15 @@ docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/001_users
 docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/002_duels.sql
 ```
 
+After copying .env.example to .env, set JWT_SECRET to a randomly generated secret. The backend will not start without it.
+
+Generate a secret using:
+```
+node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+```
+
+Change FRONTEND_ORIGIN to the origin you use in development/deployment (eg 127.0.0.1:5173).
+
 ### Resetting the database (local development only)
 
 **WARNING: The following commands permanently delete ALL data in the local `cfduel` database, including users, duels, and other records. Only use these commands for local development/testing. Never run them against a production or shared database.**
