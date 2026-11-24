@@ -6,7 +6,7 @@ export default function DuelHistory() {
     const [duels, setDuels] = useState([]);
     const [error, setError] = useState("");
 
-    async function search(username) {
+    async function search() {
         try {
             //query the past duel database
             const reply = await fetch(`/duels/history?username=${encodeURIComponent(username)}`);
