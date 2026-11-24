@@ -39,6 +39,7 @@ cd backend
 npm install
 cp .env.example .env
 # Set DATABASE_URL in .env
+docker run --name cfduel-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=cfduel -p 5432:5432 -d postgres:16 # first time only!
 docker start cfduel-postgres
 docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/001_users.sql
 docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/002_duels.sql
@@ -51,7 +52,11 @@ Generate a secret using:
 node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 ```
 
-Change FRONTEND_ORIGIN to the origin you use in development/deployment (eg 127.0.0.1:5173).
+For Windows, the database connection string is DATABASE_URL=postgres://postgres:postgres@localhost:5432/cfduel. 
+Change FRONTEND_ORIGIN to the origin you use in development/deployment (eg 127.0.0.1:5173), and change PORT to the port of the express server.
+
+In the frontend, similarly create a new .env file, and configure VITE_API_URL to your local URL. 
+**Ensure that the url does NOT contain a trailing /, as this will cause an invalid URL access.**
 
 ### Resetting the database (local development only)
 
@@ -83,7 +88,7 @@ These commands reset only the `cfduel` database, not `cfduel_test` or other Post
 ### Running the server
 
 ```bash
-npm start                     # http://localhost:3000
+npm start                     # http://localhost:3000 
 ```
 
 The API is documented in [`docs/openapi.yaml`](docs/openapi.yaml).
@@ -92,8 +97,15 @@ The API is documented in [`docs/openapi.yaml`](docs/openapi.yaml).
 
 Tests use a separate database, `cfduel_test`, which they wipe and rebuild on every run.
 
+Copy backend/.env.example.test to backend/.env.test before running integration tests.
+
 ```bash
 createdb cfduel_test
+```
+
+For windows:
+```
+docker exec cfduel-postgres createdb -U postgres cfduel_test
 ```
 
 Create `backend/.env.test` (gitignored), with `USER` replaced by your username (postgres for windows):
@@ -116,4 +128,17 @@ npm run test:integration      # integration tests only (Postgres must be running
 cd frontend
 npm install
 npm run dev
+```
+
+### Summary (full running instructions for Windows)
+```bash
+cd frontend
+npm run dev
+```
+
+Make sure Docker Desktop is running, then:
+```bash
+cd backend
+docker start cfduel-postgres
+node --watch --env-file=.env src/server.js  # --watch to restart on change
 ```

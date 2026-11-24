@@ -1,7 +1,7 @@
 export default function HomePage({ user, onLogout }) {
     async function handleLogout() {
         try {
-            const response = await fetch("http://localhost:3000/auth/logout", {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/logout`, {
                 method: "POST",
                 credentials: "include"
             });

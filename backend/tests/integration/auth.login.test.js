@@ -13,7 +13,7 @@ const valid = {
     password: 'correct-horse'
 };
 
-const ORIGIN = 'http://localhost:5173';
+const ORIGIN = process.env.FRONTEND_ORIGIN;
 
 const register = (body) =>
     request(app).post('/auth/register')
