@@ -135,8 +135,12 @@ async function confirm(req, res) {
         const cfUser = cfData.result[0];
 
         if (cfUser.firstName !== targetrows[0].cf_code) {
+            console.log({
+                expected: targetrows[0].cf_code,
+                actual: cfUser.firstName
+            });
             return res.status(400).json({
-                error: 'Codeforces first name does not match verification code'
+                error: 'Verification code does not match yet. If you just updated your Codeforces first name, wait about 30 seconds and try again.'
             });
         }
 
