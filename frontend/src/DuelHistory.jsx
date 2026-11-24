@@ -5,20 +5,26 @@ export default function DuelHistory() {
     const [username, setUsername] = useState("");
     const [duels, setDuels] = useState([]);
     const [error, setError] = useState("");
+    const [searchedUsername, setSearchedUsername] = useState("");
 
     async function search() {
+        //clear the previous search's error before starting a new one
+        setError("");
         try {
             //query the past duel database
             const reply = await fetch(`/api/duel/history?username=${encodeURIComponent(username)}`);
             const entries = await reply.json();
             if(!reply.ok){
                 setError(entries.error);
+                setDuels([]);
                 return;
             }
             setDuels(entries.duels);
-            
+            setSearchedUsername(username);
+
         } catch (err) {
             setError("server connection error");
+            setDuels([]);
         }
     }
 
@@ -40,10 +46,13 @@ export default function DuelHistory() {
             {duels.map((record) => {
                 let color;
                 //if the searched user wins the match, then display green; lose then red; draw then gray
+                //usernames are case-insensitive in the database, so compare them lowercased
+                const searched = searchedUsername.toLowerCase();
+                const winner = record.result === "player1" ? record.player1_username : record.player2_username;
                 if(record.result === "draw"){
                     color = "lightgray";
                 }
-                else if((record.result === "player1" && record.player1_username === username) || (record.result === "player2" && record.player2_username === username)){
+                else if(winner.toLowerCase() === searched){
                     color = "lightgreen";
                 }
                 else{
