@@ -9,7 +9,7 @@ export default function DuelHistory() {
     async function search() {
         try {
             //query the past duel database
-            const reply = await fetch(`/duels/history?username=${encodeURIComponent(username)}`);
+            const reply = await fetch(`/duel/history?username=${encodeURIComponent(username)}`);
             const entries = await reply.json();
             if(!reply.ok){
                 setError(entries.error);
