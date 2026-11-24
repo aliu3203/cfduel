@@ -30,7 +30,7 @@ export default function DuelHistory() {
             <input
                 type="text"
                 value={username}
-                onChange={(set)=>setUsername}
+                onChange={(e)=>setUsername(e.target.value)}
                 placeholder="Enter Username Here..."
             />
             
