@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import authRoutes from './auth.js';
+import cfRoutes from './cf.js';
 
 const router = Router();
 
@@ -7,6 +8,8 @@ const router = Router();
 // separate folder src/controllers
 
 router.use('/auth', authRoutes);
+router.use('/cf', cfRoutes);
+
 
 router.get('/', (req, res) => {
     res.send("Hello World!");
