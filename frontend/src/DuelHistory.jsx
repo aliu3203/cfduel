@@ -51,7 +51,7 @@ export default function DuelHistory() {
                 }
                 return(
                 <div key={record.id} style={{backgroundColor:color}}>
-                    {record.player1_username} ELO: {player1_old_elo + player1_rating_delta} vs. {record.player2_username} ELO: {player2_old_elo + player2_rating_delta}
+                    {record.player1_username} ELO: {record.player1_old_elo + record.player1_rating_delta} vs. {record.player2_username} ELO: {record.player2_old_elo + record.player2_rating_delta}
                 </div>
                 )})}
         </div>
