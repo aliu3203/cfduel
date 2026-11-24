@@ -47,7 +47,7 @@ export default function DuelHistory() {
                     color = "lightgreen";
                 }
                 else{
-                    color = "lightred";
+                    color = "salmon";
                 }
                 return(
                 <div key={record.id} style={{backgroundColor:color}}>
