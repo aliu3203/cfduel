@@ -69,6 +69,7 @@ dropdb cfduel
 createdb cfduel
 psql -d cfduel -v ON_ERROR_STOP=1 -f migrations/001_users.sql
 psql -d cfduel -v ON_ERROR_STOP=1 -f migrations/002_duels.sql
+psql -d cfduel -v ON_ERROR_STOP=1 -f migrations/003_cf_verifications.sql
 ```
 
 #### Windows (Git Bash + Docker)
@@ -79,6 +80,7 @@ docker exec cfduel-postgres dropdb -U postgres cfduel
 docker exec cfduel-postgres createdb -U postgres cfduel
 docker exec -i cfduel-postgres psql -U postgres -d cfduel -v ON_ERROR_STOP=1 < migrations/001_users.sql
 docker exec -i cfduel-postgres psql -U postgres -d cfduel -v ON_ERROR_STOP=1 < migrations/002_duels.sql
+docker exec -i cfduel-postgres psql -U postgres -d cfduel -v ON_ERROR_STOP=1 < migrations/003_cf_verifications.sql
 ```
 
 **Note:** Stop your backend server before resetting the database. Active connections can prevent `dropdb` from succeeding.
