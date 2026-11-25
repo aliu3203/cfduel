@@ -6,21 +6,27 @@ import { duelDecide } from '../../../src/services/duel.js';
 const START = new Date('2026-11-20T18:00:00Z');
 const TWO_HOURS_IN_SECONDS = 7200;
 
-// Builds the input for one check of the duel. Times are written as ISO strings to keep tests short;
-// a player who hasn't solved is left out (null).
-function duelCheck({ now, player1Solved = null, player2Solved = null }) {
+// Builds the input for one check of the duel. Times are written as ISO strings to keep tests short.
+// `playerNSolved` is when that player's accepted submission was made; `playerNJudging` is when they made
+// a submission Codeforces is still judging. A player with neither has no submission (null).
+function duelCheck({ now, player1Solved = null, player2Solved = null, player1Judging = null, player2Judging = null }) {
     return {
         startTime: START,
         durationSeconds: TWO_HOURS_IN_SECONDS,
         now: new Date(now),
-        player1Submission: acceptedAt(player1Solved),
-        player2Submission: acceptedAt(player2Solved),
+        player1Submission: acceptedAt(player1Solved) ?? judgingAt(player1Judging),
+        player2Submission: acceptedAt(player2Solved) ?? judgingAt(player2Judging),
     };
 }
 
 // An accepted submission made at `time` (an ISO string), or null if there is no time.
 function acceptedAt(time) {
     return time && { time: new Date(time), status: 'accepted' };
+}
+
+// A submission made at `time` that Codeforces is still judging, or null if there is no time.
+function judgingAt(time) {
+    return time && { time: new Date(time), status: 'judging' };
 }
 
 describe('duelDecide', () => {
@@ -132,6 +138,58 @@ describe('duelDecide', () => {
             });
 
             assert.equal(duelDecide(check), 'player2');
+        });
+    });
+
+    // A submission still being judged might be accepted, so the duel waits for its verdict
+    // whenever it could decide the result.
+    describe('when a submission is still being judged', () => {
+        test('waits while the only submission is being judged', () => {
+            const check = duelCheck({ now: '2026-11-20T18:45:00Z', player1Judging: '2026-11-20T18:40:00Z' });
+
+            assert.equal(duelDecide(check), null);
+        });
+
+        test('does not call a draw at the end while a submission made in time is being judged', () => {
+            const check = duelCheck({ now: '2026-11-20T20:00:20Z', player2Judging: '2026-11-20T19:59:50Z' });
+
+            assert.equal(duelDecide(check), null);
+        });
+
+        test('waits when the earlier submission is being judged, even though the later one is accepted', () => {
+            const check = duelCheck({
+                now: '2026-11-20T18:45:00Z',
+                player1Judging: '2026-11-20T18:40:00Z',
+                player2Solved: '2026-11-20T18:42:00Z',
+            });
+
+            assert.equal(duelDecide(check), null);
+        });
+
+        test('the earlier accepted submission wins without waiting for a later one being judged', () => {
+            const check = duelCheck({
+                now: '2026-11-20T18:45:00Z',
+                player1Solved: '2026-11-20T18:40:00Z',
+                player2Judging: '2026-11-20T18:42:00Z',
+            });
+
+            assert.equal(duelDecide(check), 'player1');
+        });
+
+        test('waits when both submitted in the same second and one is still being judged', () => {
+            const check = duelCheck({
+                now: '2026-11-20T18:45:00Z',
+                player1Solved: '2026-11-20T18:40:00Z',
+                player2Judging: '2026-11-20T18:40:00Z',
+            });
+
+            assert.equal(duelDecide(check), null);
+        });
+
+        test('ignores a submission made after the timer hit 0, so the duel is still a draw', () => {
+            const check = duelCheck({ now: '2026-11-20T20:00:30Z', player1Judging: '2026-11-20T20:00:10Z' });
+
+            assert.equal(duelDecide(check), 'draw');
         });
     });
 });
