@@ -52,7 +52,7 @@ after(async () => {
 async function login() {
     const client = request.agent(app);
 
-    const registerResponse = await client.post('/auth/register')
+    const registerResponse = await client.post('/api/auth/register')
         .set('Origin', ORIGIN)
         .send({
             username: USERNAME,
@@ -62,7 +62,7 @@ async function login() {
 
     assert.equal(registerResponse.status, 201);
 
-    const loginResponse = await client.post('/auth/login')
+    const loginResponse = await client.post('/api/auth/login')
         .set('Origin', ORIGIN)
         .send({
             username: USERNAME,
@@ -75,13 +75,13 @@ async function login() {
 }
 
 function start(client, cfHandle = HANDLE) {
-    return client.post('/cf/verify/start')
+    return client.post('/api/cf/verify/start')
         .set('Origin', ORIGIN)
         .send({ cfHandle });
 }
 
 function confirm(client) {
-    return client.post('/cf/verify/confirm')
+    return client.post('/api/cf/verify/confirm')
         .set('Origin', ORIGIN)
         .send({});
 }

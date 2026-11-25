@@ -11,7 +11,7 @@ const ORIGIN = process.env.FRONTEND_ORIGIN;
 
 const valid = { username: 'alice', email: 'alice@example.com', password: 'correct-horse' };
 const register = (body) =>
-    request(app).post('/auth/register')
+    request(app).post('/api/auth/register')
         .set('Origin', ORIGIN)
         .send(body);
 
