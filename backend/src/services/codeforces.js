@@ -57,7 +57,7 @@ export async function getEarliestSubmission(handle, problemId, startTime) {
     url.searchParams.set('from', '1');
     url.searchParams.set('count', String(RECENT_SUBMISSIONS_TO_CHECK));
 
-    const response = await fetch(url);
+    const response = await fetch(url, { signal: AbortSignal.timeout(10_000) });
 
     let body;
     try {
