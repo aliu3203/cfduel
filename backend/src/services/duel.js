@@ -2,8 +2,11 @@
 
 // Returns the winner ('player1' or 'player2'), 'draw', or null while the duel is still going.
 // These match the values stored in the duels table's result column.
-export function duelDecide({ startTime, durationSeconds, now, player1SolveTime, player2SolveTime }) {
+// Each player's submission is their earliest one that wasn't rejected, as { time, status }, or null.
+export function duelDecide({ startTime, durationSeconds, now, player1Submission, player2Submission }) {
     const endTime = new Date(startTime.getTime() + durationSeconds * 1000);
+    const player1SolveTime = player1Submission?.time;
+    const player2SolveTime = player2Submission?.time;
 
     // A solve counts if it landed by the time the timer hit 0, even if we only see it later.
     const player1SolvedInTime = player1SolveTime && player1SolveTime <= endTime;

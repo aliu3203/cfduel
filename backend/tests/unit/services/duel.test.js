@@ -13,9 +13,14 @@ function duelCheck({ now, player1Solved = null, player2Solved = null }) {
         startTime: START,
         durationSeconds: TWO_HOURS_IN_SECONDS,
         now: new Date(now),
-        player1SolveTime: player1Solved && new Date(player1Solved),
-        player2SolveTime: player2Solved && new Date(player2Solved),
+        player1Submission: acceptedAt(player1Solved),
+        player2Submission: acceptedAt(player2Solved),
     };
+}
+
+// An accepted submission made at `time` (an ISO string), or null if there is no time.
+function acceptedAt(time) {
+    return time && { time: new Date(time), status: 'accepted' };
 }
 
 describe('duelDecide', () => {

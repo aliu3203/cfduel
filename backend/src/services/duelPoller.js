@@ -18,8 +18,8 @@ export async function checkDuel(duel, now, getSubmission = getEarliestSubmission
         startTime: duel.started_at,
         durationSeconds: duel.duration_seconds,
         now,
-        player1SolveTime,
-        player2SolveTime,
+        player1Submission,
+        player2Submission,
     });
     if (result === null) {
         return null;
