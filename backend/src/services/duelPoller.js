@@ -8,7 +8,7 @@ import { duelDecide } from './duel.js';
 // `duel` is a duels row joined with both players' Codeforces handles.
 // `getSubmission` looks up a player's earliest submission; tests pass in a fake so they never call Codeforces.
 export async function checkDuel(duel, now, getSubmission = getEarliestSubmission) {
-    // One request at a time, to stay under Codeforces' rate limit.
+    // TODO: rate limiting is added separately; these two requests are not spaced out yet.
     const player1Submission = await getSubmission(duel.player1_handle, duel.problem_id, duel.started_at);
     const player2Submission = await getSubmission(duel.player2_handle, duel.problem_id, duel.started_at);
 
