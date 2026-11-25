@@ -14,15 +14,27 @@ function parseProblemId(problemId) {
     return { contestId: Number(match.groups.contestId), index: match.groups.index };
 }
 
-// Returns the user's earliest accepted submission of the problem at or after startTime,
-// as { time, status: 'accepted' }, or null if there isn't one.
+// Turns a Codeforces verdict into 'accepted', 'judging' (it might still be accepted), or 'rejected'.
+// Codeforces leaves the verdict out right after a submission is made, then shows TESTING while it runs.
+function statusOf(verdict) {
+    if (verdict === 'OK') {
+        return 'accepted';
+    }
+    if (verdict === undefined || verdict === 'TESTING') {
+        return 'judging';
+    }
+    return 'rejected'; // WRONG_ANSWER, TIME_LIMIT_EXCEEDED, COMPILATION_ERROR, ...
+}
+
+// Returns the user's earliest submission of the problem at or after startTime that wasn't rejected,
+// as { time, status } where status is 'accepted' or 'judging', or null if there isn't one.
 // Codeforces records times in whole seconds, so a submission in the same second as the start counts.
 export function findEarliestSubmission(submissions, problemId, startTime) {
     const problem = parseProblemId(problemId);
     const startSeconds = Math.floor(startTime.getTime() / 1000);
 
     const candidates = submissions.filter((submission) =>
-        submission.verdict === 'OK'
+        statusOf(submission.verdict) !== 'rejected'
         && submission.problem.contestId === problem.contestId
         && submission.problem.index === problem.index
         && submission.creationTimeSeconds >= startSeconds
@@ -34,11 +46,11 @@ export function findEarliestSubmission(submissions, problemId, startTime) {
     const earliest = candidates.reduce((earliestSoFar, submission) =>
         submission.creationTimeSeconds < earliestSoFar.creationTimeSeconds ? submission : earliestSoFar
     );
-    return { time: new Date(earliest.creationTimeSeconds * 1000), status: 'accepted' };
+    return { time: new Date(earliest.creationTimeSeconds * 1000), status: statusOf(earliest.verdict) };
 }
 
-// Fetches the user's recent submissions from Codeforces and returns their earliest accepted
-// submission of the problem at or after startTime, as { time, status }, or null if there isn't one.
+// Fetches the user's recent submissions from Codeforces and returns their earliest submission of the
+// problem at or after startTime that wasn't rejected, as { time, status }, or null if there isn't one.
 export async function getEarliestSubmission(handle, problemId, startTime) {
     const url = new URL('https://codeforces.com/api/user.status');
     url.searchParams.set('handle', handle);
