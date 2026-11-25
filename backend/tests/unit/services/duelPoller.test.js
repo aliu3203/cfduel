@@ -31,6 +31,20 @@ function fakeSolves(solveTimes) {
     );
 }
 
+// Like fakeSolves, but `judgingTimes` also maps a handle to when that player made a submission
+// Codeforces is still judging.
+function fakeSolvesAndJudging(solveTimes, judgingTimes) {
+    return mock.fn(async (handle) => {
+        if (solveTimes[handle]) {
+            return { time: new Date(solveTimes[handle]), status: 'accepted' };
+        }
+        if (judgingTimes[handle]) {
+            return { time: new Date(judgingTimes[handle]), status: 'judging' };
+        }
+        return null;
+    });
+}
+
 describe('checkDuel', () => {
     describe('while the duel is still going', () => {
         test('returns null because there is nothing to save yet', async () => {
@@ -134,6 +148,30 @@ describe('checkDuel', () => {
                 player1_submission_at: null,
                 player2_submission_at: new Date('2026-11-20T19:59:50Z'),
             });
+        });
+    });
+
+    // A submission Codeforces is still judging might be accepted or rejected, so its time isn't saved.
+    describe('when a submission is still being judged', () => {
+        test("player 1 wins, and player 2's later submission still being judged is not saved", async () => {
+            const fake = fakeSolvesAndJudging({ alice: '2026-11-20T18:40:00Z' }, { bob: '2026-11-20T18:42:00Z' });
+
+            const update = await checkDuel(DUEL, new Date('2026-11-20T18:42:30Z'), fake);
+
+            assert.deepEqual(update, {
+                result: 'player1',
+                ended_at: new Date('2026-11-20T18:42:30Z'),
+                player1_submission_at: new Date('2026-11-20T18:40:00Z'),
+                player2_submission_at: null,
+            });
+        });
+
+        test('saves nothing after time runs out while a submission made in time is being judged', async () => {
+            const fake = fakeSolvesAndJudging({}, { bob: '2026-11-20T19:59:50Z' });
+
+            const update = await checkDuel(DUEL, new Date('2026-11-20T20:00:20Z'), fake);
+
+            assert.equal(update, null);
         });
     });
 
