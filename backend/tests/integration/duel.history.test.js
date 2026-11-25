@@ -160,7 +160,7 @@ describe('GET /duel/history', () => {
 
     //acceptance criterion B, search based on opponent handle
 
-    test('anna searches for boris', async () => {
+    test('anna searches for boris, descending order', async () => {
         const client = await login('anna');
         const res = await client.get('/duel/history').query({oppHandle: 'boris_cf'});
 
@@ -171,7 +171,7 @@ describe('GET /duel/history', () => {
         assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[8,2,1]);
     });
 
-    test('boris searches for anna', async () => {
+    test('boris searches for anna, reverse search', async () => {
         const client = await login('boris');
         const res = await client.get('/duel/history').query({oppHandle: 'ann_cf'});
 
@@ -182,7 +182,7 @@ describe('GET /duel/history', () => {
         assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[8,2,1]);
     });
 
-    test('sheldon searches for nathan', async () => {
+    test('sheldon searches for nathan, single instance', async () => {
         const client = await login('sheldon');
         const res = await client.get('/duel/history').query({oppHandle: 'nat_cf'});
 
@@ -192,7 +192,7 @@ describe('GET /duel/history', () => {
         assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[10]);
     });
 
-    test('saoirse searches for wilson', async () => {
+    test('saoirse searches for wilson, active match', async () => {
         const client = await login('saoirse');
         const res = await client.get('/duel/history').query({oppHandle: 'wilson_cf'});
 
@@ -213,6 +213,65 @@ describe('GET /duel/history', () => {
     });
 
     //acceptance criterion C, search based on problem num.
+
+    test('anna, problem 1843C', async () => {
+        const client = await login('anna');
+        const res = await client.get('/duel/history').query({problemNum: '1843C'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 3);
+        assert.deepEqual(res.body.duels,[8,3,1]);
+    });
+
+    test('nathan, problem 1843C, order', async () => {
+        const client = await login('nathan');
+        const res = await client.get('/duel/history').query({problemNum: '1843C'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 3);
+        assert.deepEqual(res.body.duels,[6,3,10]);
+    });
+
+    test('wilson, problem 1844A, draw', async () => {
+        const client = await login('wilson');
+        const res = await client.get('/duel/history').query({problemNum: '1844A'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 1);
+        assert.deepEqual(res.body.duels,[4]);
+    });
+
+    test('saoirse, problem 1850A, lost', async () => {
+        const client = await login('saoirse');
+        const res = await client.get('/duel/history').query({problemNum: '1850A'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 1);
+        assert.deepEqual(res.body.duels,[7]);
+    });
+
+    test('boris, problem 1858A, cancelled', async () => {
+        const client = await login('boris');
+        const res = await client.get('/duel/history').query({problemNum: '1858A'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 0);
+        assert.deepEqual(res.body.duels,[]);
+    });
+
+    test('sheldon, problem 1857A, pending', async () => {
+        const client = await login('sheldon');
+        const res = await client.get('/duel/history').query({problemNum: '1857A'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 0);
+        assert.deepEqual(res.body.duels,[]);
+    });
+
     //acceptance criterion D, duels played within a date range
+
+    
+
+
 
 });
