@@ -44,8 +44,8 @@ beforeEach(async () => {
     //insert duels
     await pool.query(`
         INSERT INTO duels 
-            (player1_username, player2_username, status,
-            problem_id, result, started_at, ended_at)
+            (player1_username,player2_username,status,
+            problem_id,result,started_at,ended_at)
         VALUES
             ('anna', 'boris', 'finished', '1843C', 'player1',
             '2026-11-01T18:00:00Z', '2026-11-01T19:00:00Z'),
@@ -209,7 +209,7 @@ describe('GET /duel/history', () => {
         assert.equal(res.status,200);
         assert.equal(res.body.playedBefore,true);
         assert.equal(res.body.duels.length, 1);
-        assert.deepEqual(res.body.duels,[9]);
+        assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[9]);
     });
 
     //acceptance criterion C, search based on problem num.
@@ -220,7 +220,7 @@ describe('GET /duel/history', () => {
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 3);
-        assert.deepEqual(res.body.duels,[8,3,1]);
+        assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[8,3,1]);
     });
 
     test('nathan, problem 1843C, order', async () => {
@@ -229,7 +229,7 @@ describe('GET /duel/history', () => {
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 3);
-        assert.deepEqual(res.body.duels,[6,3,10]);
+        assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[6,3,10]);
     });
 
     test('wilson, problem 1844A, draw', async () => {
@@ -238,7 +238,7 @@ describe('GET /duel/history', () => {
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 1);
-        assert.deepEqual(res.body.duels,[4]);
+        assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[4]);
     });
 
     test('saoirse, problem 1850A, lost', async () => {
@@ -247,7 +247,7 @@ describe('GET /duel/history', () => {
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 1);
-        assert.deepEqual(res.body.duels,[7]);
+        assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[7]);
     });
 
     test('boris, problem 1858A, cancelled', async () => {
@@ -270,8 +270,60 @@ describe('GET /duel/history', () => {
 
     //acceptance criterion D, duels played within a date range
 
+    test('anna, nov 1 to nov 10', async () => {
+        const client = await login('anna');
+        const res = await client.get('/duel/history').query({startDate: '2026-11-01',endDate: '2026-11-10'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 5);
+        assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[5,4,3,2,1]);
+    });
+
+    test('boris, nov 1 to nov 3', async () => {
+        const client = await login('boris');
+        const res = await client.get('/duel/history').query({startDate: '2026-11-01',endDate: '2026-11-03'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 2);
+        assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[2,1]);
+    });    
+
+    test('nathan, oct 25 to nov 11', async () => {
+        const client = await login('nathan');
+        const res = await client.get('/duel/history').query({startDate: '2026-10-25',endDate: '2026-11-11'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 3);
+        assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[6,3,10]);
+    });
+
+    test('wilson, nov 7 to nov 7', async () => {
+        const client = await login('wilson');
+        const res = await client.get('/duel/history').query({startDate: '2026-11-07',endDate: '2026-11-07'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 1);
+        assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[4]);
+    });
+
+    test('saoirse, nov 12 to nov 12', async () => {
+        const client = await login('saoirse');
+        const res = await client.get('/duel/history').query({startDate: '2026-11-12',endDate: '2026-11-12'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 1);
+        assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[7]);
+    });
+
+    test('major, nov 20 to nov 24', async () => {
+        const client = await login('major');
+        const res = await client.get('/duel/history').query({startDate: '2026-11-20',endDate: '2026-11-24'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 0);
+        assert.deepEqual(res.body.duels,[]);
+    });
+
     
-
-
 
 });
