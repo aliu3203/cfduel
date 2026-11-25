@@ -14,30 +14,32 @@ function parseProblemId(problemId) {
     return { contestId: Number(match.groups.contestId), index: match.groups.index };
 }
 
-// Returns when the user first solved the problem at or after startTime, or null if they haven't.
-// Codeforces records times in whole seconds, so a solve in the same second as the start counts.
-export function findFirstAcceptedSubmission(submissions, problemId, startTime) {
+// Returns the user's earliest accepted submission of the problem at or after startTime,
+// as { time, status: 'accepted' }, or null if there isn't one.
+// Codeforces records times in whole seconds, so a submission in the same second as the start counts.
+export function findEarliestSubmission(submissions, problemId, startTime) {
     const problem = parseProblemId(problemId);
     const startSeconds = Math.floor(startTime.getTime() / 1000);
 
-    const solveTimes = submissions
-        .filter((submission) =>
-            submission.verdict === 'OK'
-            && submission.problem.contestId === problem.contestId
-            && submission.problem.index === problem.index
-            && submission.creationTimeSeconds >= startSeconds
-        )
-        .map((submission) => submission.creationTimeSeconds);
+    const candidates = submissions.filter((submission) =>
+        submission.verdict === 'OK'
+        && submission.problem.contestId === problem.contestId
+        && submission.problem.index === problem.index
+        && submission.creationTimeSeconds >= startSeconds
+    );
 
-    if (solveTimes.length === 0) {
+    if (candidates.length === 0) {
         return null;
     }
-    return new Date(Math.min(...solveTimes) * 1000);
+    const earliest = candidates.reduce((earliestSoFar, submission) =>
+        submission.creationTimeSeconds < earliestSoFar.creationTimeSeconds ? submission : earliestSoFar
+    );
+    return { time: new Date(earliest.creationTimeSeconds * 1000), status: 'accepted' };
 }
 
-// Fetches the user's recent submissions from Codeforces and returns when they first solved
-// the problem at or after startTime, or null if they haven't.
-export async function getFirstAcceptedSubmission(handle, problemId, startTime) {
+// Fetches the user's recent submissions from Codeforces and returns their earliest accepted
+// submission of the problem at or after startTime, as { time, status }, or null if there isn't one.
+export async function getEarliestSubmission(handle, problemId, startTime) {
     const url = new URL('https://codeforces.com/api/user.status');
     url.searchParams.set('handle', handle);
     url.searchParams.set('from', '1');
@@ -57,5 +59,5 @@ export async function getFirstAcceptedSubmission(handle, problemId, startTime) {
         throw new Error(`Codeforces API error: ${body.comment}`);
     }
 
-    return findFirstAcceptedSubmission(body.result, problemId, startTime);
+    return findEarliestSubmission(body.result, problemId, startTime);
 }

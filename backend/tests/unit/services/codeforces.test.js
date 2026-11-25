@@ -1,6 +1,6 @@
 import { describe, test, mock, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { findFirstAcceptedSubmission, getFirstAcceptedSubmission } from '../../../src/services/codeforces.js';
+import { findEarliestSubmission, getEarliestSubmission } from '../../../src/services/codeforces.js';
 
 // Duel start used throughout: 2026-11-20 18:00:00 UTC (= 1795197600 in Unix seconds).
 const START = new Date('2026-11-20T18:00:00Z');
@@ -28,19 +28,19 @@ function submission({ contestId = 1850, index = 'A', verdict = 'OK', creationTim
     };
 }
 
-describe('findFirstAcceptedSubmission', () => {
+describe('findEarliestSubmission', () => {
     test('returns the time of an accepted solve made after the start', () => {
         const submissions = [submission({ creationTimeSeconds: 1795197660 })]; // 18:01:00
 
-        const result = findFirstAcceptedSubmission(submissions, '1850A', START);
+        const result = findEarliestSubmission(submissions, '1850A', START);
 
-        assert.deepEqual(result, new Date('2026-11-20T18:01:00Z'));
+        assert.deepEqual(result, { time: new Date('2026-11-20T18:01:00Z'), status: 'accepted' });
     });
 
     test('ignores an accepted solve made before the start', () => {
         const submissions = [submission({ creationTimeSeconds: 1795197540 })]; // 17:59:00
 
-        assert.equal(findFirstAcceptedSubmission(submissions, '1850A', START), null);
+        assert.equal(findEarliestSubmission(submissions, '1850A', START), null);
     });
 
     test('ignores submissions that were not accepted', () => {
@@ -49,19 +49,19 @@ describe('findFirstAcceptedSubmission', () => {
             submission({ verdict: 'TESTING', creationTimeSeconds: 1795197720 }),
         ];
 
-        assert.equal(findFirstAcceptedSubmission(submissions, '1850A', START), null);
+        assert.equal(findEarliestSubmission(submissions, '1850A', START), null);
     });
 
     test('ignores accepted solves of a different problem in the same contest', () => {
         const submissions = [submission({ index: 'B', creationTimeSeconds: 1795197660 })];
 
-        assert.equal(findFirstAcceptedSubmission(submissions, '1850A', START), null);
+        assert.equal(findEarliestSubmission(submissions, '1850A', START), null);
     });
 
     test('ignores accepted solves of the same letter in a different contest', () => {
         const submissions = [submission({ contestId: 1851, creationTimeSeconds: 1795197660 })];
 
-        assert.equal(findFirstAcceptedSubmission(submissions, '1850A', START), null);
+        assert.equal(findEarliestSubmission(submissions, '1850A', START), null);
     });
 
     test('returns the earliest accepted solve when there are several', () => {
@@ -71,9 +71,9 @@ describe('findFirstAcceptedSubmission', () => {
             submission({ creationTimeSeconds: 1795197660 }), // 18:01:00
         ];
 
-        const result = findFirstAcceptedSubmission(submissions, '1850A', START);
+        const result = findEarliestSubmission(submissions, '1850A', START);
 
-        assert.deepEqual(result, new Date('2026-11-20T18:01:00Z'));
+        assert.deepEqual(result, { time: new Date('2026-11-20T18:01:00Z'), status: 'accepted' });
     });
 
     test('counts a solve in the same second the duel started', () => {
@@ -81,27 +81,27 @@ describe('findFirstAcceptedSubmission', () => {
         const startWithMillis = new Date('2026-11-20T18:00:00.700Z');
         const submissions = [submission({ creationTimeSeconds: 1795197600 })]; // 18:00:00
 
-        const result = findFirstAcceptedSubmission(submissions, '1850A', startWithMillis);
+        const result = findEarliestSubmission(submissions, '1850A', startWithMillis);
 
-        assert.deepEqual(result, new Date('2026-11-20T18:00:00Z'));
+        assert.deepEqual(result, { time: new Date('2026-11-20T18:00:00Z'), status: 'accepted' });
     });
 
     test('returns null when the user has no submissions', () => {
-        assert.equal(findFirstAcceptedSubmission([], '1850A', START), null);
+        assert.equal(findEarliestSubmission([], '1850A', START), null);
     });
 
     test('handles two-part problem letters like B1', () => {
         const submissions = [submission({ contestId: 1846, index: 'B1', creationTimeSeconds: 1795197660 })];
 
-        const result = findFirstAcceptedSubmission(submissions, '1846B1', START);
+        const result = findEarliestSubmission(submissions, '1846B1', START);
 
-        assert.deepEqual(result, new Date('2026-11-20T18:01:00Z'));
+        assert.deepEqual(result, { time: new Date('2026-11-20T18:01:00Z'), status: 'accepted' });
     });
 
     test('throws a clear error for a malformed problem ID', () => {
         for (const badId of ['abc', '1850', 'A1850', '']) {
             assert.throws(
-                () => findFirstAcceptedSubmission([], badId, START),
+                () => findEarliestSubmission([], badId, START),
                 /invalid Codeforces problem ID/i,
                 `expected "${badId}" to be rejected`,
             );
@@ -125,7 +125,7 @@ function fakeCodeforcesOutage(status) {
     );
 }
 
-describe('getFirstAcceptedSubmission', () => {
+describe('getEarliestSubmission', () => {
     afterEach(() => mock.restoreAll());
 
     test("returns the earliest solve from the user's Codeforces submissions", async () => {
@@ -137,15 +137,15 @@ describe('getFirstAcceptedSubmission', () => {
             ],
         });
 
-        const result = await getFirstAcceptedSubmission('alice', '1850A', START);
+        const result = await getEarliestSubmission('alice', '1850A', START);
 
-        assert.deepEqual(result, new Date('2026-11-20T18:01:00Z'));
+        assert.deepEqual(result, { time: new Date('2026-11-20T18:01:00Z'), status: 'accepted' });
     });
 
     test("asks Codeforces for that user's submissions", async () => {
         const fetchMock = fakeCodeforcesReply({ status: 'OK', result: [] });
 
-        await getFirstAcceptedSubmission('alice', '1850A', START);
+        await getEarliestSubmission('alice', '1850A', START);
 
         assert.equal(fetchMock.mock.callCount(), 1);
         const requestedUrl = new URL(fetchMock.mock.calls[0].arguments[0]);
@@ -158,7 +158,7 @@ describe('getFirstAcceptedSubmission', () => {
         fakeCodeforcesReply({ status: 'FAILED', comment: 'handle: User with handle nobody not found' }, 400);
 
         await assert.rejects(
-            getFirstAcceptedSubmission('nobody', '1850A', START),
+            getEarliestSubmission('nobody', '1850A', START),
             /User with handle nobody not found/,
         );
     });
@@ -167,7 +167,7 @@ describe('getFirstAcceptedSubmission', () => {
         fakeCodeforcesOutage(503);
 
         await assert.rejects(
-            getFirstAcceptedSubmission('alice', '1850A', START),
+            getEarliestSubmission('alice', '1850A', START),
             /Codeforces .*503/,
         );
     });

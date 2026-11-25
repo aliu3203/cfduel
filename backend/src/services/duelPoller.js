@@ -1,16 +1,18 @@
 // Checks active duels against Codeforces and works out what should be saved for each one.
 
-import { getFirstAcceptedSubmission } from './codeforces.js';
+import { getEarliestSubmission } from './codeforces.js';
 import { duelDecide } from './duel.js';
 
 // Asks Codeforces whether either player has solved the duel's problem, and returns the columns
 // to update in the duels row, or null if there is nothing to save yet.
 // `duel` is a duels row joined with both players' Codeforces handles.
-// `getSolveTime` looks up when a player solved; tests pass in a fake so they never call Codeforces.
-export async function checkDuel(duel, now, getSolveTime = getFirstAcceptedSubmission) {
+// `getSubmission` looks up a player's earliest submission; tests pass in a fake so they never call Codeforces.
+export async function checkDuel(duel, now, getSubmission = getEarliestSubmission) {
     // One request at a time, to stay under Codeforces' rate limit.
-    const player1SolveTime = await getSolveTime(duel.player1_handle, duel.problem_id, duel.started_at);
-    const player2SolveTime = await getSolveTime(duel.player2_handle, duel.problem_id, duel.started_at);
+    const player1Submission = await getSubmission(duel.player1_handle, duel.problem_id, duel.started_at);
+    const player2Submission = await getSubmission(duel.player2_handle, duel.problem_id, duel.started_at);
+    const player1SolveTime = player1Submission?.time ?? null;
+    const player2SolveTime = player2Submission?.time ?? null;
 
     const result = duelDecide({
         startTime: duel.started_at,

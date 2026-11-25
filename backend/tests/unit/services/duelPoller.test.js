@@ -12,7 +12,7 @@ const DUEL = {
     player2_handle: 'bob',
 };
 
-// A stand-in for getFirstAcceptedSubmission that fails for `failingHandle` the way the real one does
+// A stand-in for getEarliestSubmission that fails for `failingHandle` the way the real one does
 // (e.g. when Codeforces is down or rate-limits us) and says nobody else has solved.
 function fakeCodeforcesFailure(failingHandle) {
     return mock.fn(async (handle) => {
@@ -23,11 +23,11 @@ function fakeCodeforcesFailure(failingHandle) {
     });
 }
 
-// A stand-in for getFirstAcceptedSubmission, so tests never call Codeforces (it has its own tests).
+// A stand-in for getEarliestSubmission, so tests never call Codeforces (it has its own tests).
 // `solveTimes` maps a handle to when that player solved; players left out haven't solved.
 function fakeSolves(solveTimes) {
     return mock.fn(async (handle) =>
-        solveTimes[handle] ? new Date(solveTimes[handle]) : null,
+        solveTimes[handle] ? { time: new Date(solveTimes[handle]), status: 'accepted' } : null,
     );
 }
 
