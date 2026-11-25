@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import authRoutes from './auth.js';
+import duelRoutes from './duel.js';
 
 const router = Router();
 
@@ -7,6 +8,7 @@ const router = Router();
 // separate folder src/controllers
 
 router.use('/auth', authRoutes);
+router.use('/duel', duelRoutes);
 
 router.get('/', (req, res) => {
     res.send("Hello World!");
