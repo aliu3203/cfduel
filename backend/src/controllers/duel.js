@@ -31,7 +31,7 @@ export async function history(req, res) {
         const playedBefore = totals[0].total > 0;
 
         if(!playedBefore){
-            return res.status(200),json({duels:[], playedBefore:false})
+            return res.status(200).json({duels:[], playedBefore:false})
         }
 
         //if user exists, find their finished duels
