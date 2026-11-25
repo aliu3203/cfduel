@@ -59,10 +59,10 @@ export async function history(req, res) {
             startDate||null,
             endDate||null]
         );
-        console.error(error);
         return res.status(200).json({ duels: DuelInfo, playedBefore:true});
 
     } catch (error) {
+        console.error(error);
         return res.status(500).json({ error: "server error" });
     }
 }
