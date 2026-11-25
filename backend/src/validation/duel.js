@@ -1,15 +1,3 @@
-const USER_RE = /^[a-zA-Z0-9_]{3,30}$/;
-
-function validateUsernameInfo({ username }) {
-    if (typeof username !== 'string') {
-        return "username is required";
-    }
-    if (!USER_RE.test(username)) {
-        return "username does not have between 3-30 characters, or contains special characters";
-    }
-    return null;
-}
-
 function validDate(date){
     if(typeof date !== 'string || !/\d{4}-\d{2}-\d{2}$'.test(date)){
         return false;
@@ -17,11 +5,7 @@ function validDate(date){
     return true;
 }
 
-export function validateHistorySearch({username,oppHandle,problemNum,startDate,endDate}){
-    const nameError = validateUsernameInfo({username});
-    if(nameError){
-        return nameError;
-    }
+export function validateHistorySearch({oppHandle,problemNum,startDate,endDate}){
     if(oppHandle !== undefined && typeof oppHandle !== "string"){
         return "invalid opponent handle";
     }

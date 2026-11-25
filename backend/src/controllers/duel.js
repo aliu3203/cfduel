@@ -2,25 +2,26 @@ import pool from '../db.js';
 import { validateHistorySearch } from '../validation/duel.js';
 
 export async function history(req, res) {
-    const {username, oppHandle, problemNum, startDate, endDate} = req.query;
-    const error = validateHistorySearch({username,oppHandle,problemNum,startDate,endDate});
+    const {oppHandle, problemNum, startDate, endDate} = req.query;
+    const error = validateHistorySearch({oppHandle,problemNum,startDate,endDate});
 
     if (error) {
         return res.status(400).json({ error: error });
     }
 
     try {
-        //checking from the data base to see if the user exists
+        //the searcher is always the logged-in user (set by requireAuth), never a query param
         const { rows: UserInfo } = await pool.query(
-            `SELECT 1
+            `SELECT username
             FROM users
-            WHERE username = $1
-            LIMIT 1`,
-            [username]
-        ); //if not, return error
+            WHERE id = $1`,
+            [req.user.id]
+        ); //the token is valid but the account was deleted
         if (UserInfo.length === 0) {
-            return res.status(404).json({ error: "user doesn't exist in the database" });
+            return res.status(401).json({ error: "User does not exist" });
         }
+        const username = UserInfo[0].username;
+
         const { rows: totals } = await pool.query(
             `SELECT COUNT(*)::integer AS total
              FROM duels
@@ -35,7 +36,7 @@ export async function history(req, res) {
         }
 
         //if user exists, find their finished duels
-        //search based on username, opponent handle, problem number, start/end date
+        //optional filters: opponent handle, problem number, start/end date
         const { rows: DuelInfo } = await pool.query(
             `SELECT duels.*, users.cf_handle FROM duels
             JOIN users 
