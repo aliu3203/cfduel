@@ -6,7 +6,7 @@ info:
   description: HTTPS API for cfduel
 
 servers:
-  - url: http://localhost:3000
+  - url: http://localhost:3000 # CHANGE WITH YOUR FRONTEND API URL
 
 tags:
   - name: auth
@@ -50,3 +50,199 @@ paths:
           description: Username or email already taken
         '500':
           description: Every other errors
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Log in to an existing account
+      description: Validates credentials and issues a JWT in an HttpOnly cookie.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                  description: Registered username
+                password:
+                  type: string
+                  description: Account password
+      responses:
+        '200':
+          description: Login successful; authentication cookie issued
+          headers:
+            Set-Cookie:
+              description: JWT authentication cookie
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  username:
+                    type: string
+                  rating:
+                    type: integer
+        '400':
+          description: Missing or invalid input
+        '401':
+          description: Incorrect username or password
+        '403':
+          description: Untrusted request origin
+        '500':
+          description: Internal server error
+          
+  # REQUIRES COOKIE!!!! credentials: "include" in react
+  /auth/me:
+    get:
+      tags: [auth]
+      summary: Get the currently authenticated user
+      description: Verifies the JWT cookie and retrieves the current user profile from PostgreSQL.
+      security:
+        - cookieAuth: [] 
+      responses:
+        '200':
+          description: Authenticated user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  username:
+                    type: string
+                  cfHandle:
+                    type:
+                      - string
+                      - 'null'
+                  rating:
+                    type: integer
+        '401':
+          description: Missing, invalid, or expired JWT, or user no longer exists
+        '500':
+          description: Internal server error
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Log out of the current account
+      description: Clears the JWT authentication cookie from the browser.
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logged out
+        '403':
+          description: Untrusted request origin
+  /cf/verify/start:
+    post:
+      summary: Start Codeforces handle verification
+      description: >
+        Generates a verification code for the authenticated user.
+        The user must temporarily set their Codeforces first name
+        to this code. The code expires after 10 minutes.
+        Starting again replaces any previous pending verification.
+        Existing linked handles may be replaced after verification.
+      tags:
+        - Codeforces
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cfHandle
+              properties:
+                cfHandle:
+                  type: string
+                  example: tourist
+      responses:
+        '200':
+          description: Verification challenge created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - cfCode
+                  - expiresAt
+                properties:
+                  cfCode:
+                    type: string
+                    example: cfduel_0123456789abcdef
+                  expiresAt:
+                    type: string
+                    format: date-time
+        '400':
+          description: Invalid Codeforces handle
+        '401':
+          description: Not authenticated
+        '403':
+          description: Untrusted request origin
+        '404':
+          description: User not found
+        '409':
+          description: Codeforces handle already claimed
+        '500':
+          description: Internal server error
+
+  /cf/verify/confirm:
+    post:
+      summary: Confirm Codeforces handle ownership
+      description: >
+        Checks whether the Codeforces user's first name matches
+        the pending verification code. On success, links the
+        Codeforces handle to the authenticated account and
+        deletes the pending verification. The user may then
+        restore their original Codeforces first name.
+      tags:
+        - Codeforces
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Codeforces handle successfully verified
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - cfHandle
+                properties:
+                  cfHandle:
+                    type: string
+                    example: tourist
+        '400':
+          description: Codeforces first name does not match verification code
+        '401':
+          description: Not authenticated
+        '403':
+          description: Untrusted request origin
+        '404':
+          description: User, pending verification, or Codeforces handle not found      
+        '409':
+          description: Codeforces handle already claimed, verification changed, or user has an unfinished duel
+        '410':
+          description: Verification code expired
+        '502':
+          description: Codeforces API unavailable or returned an error
+        '504':
+          description: Codeforces API timed out
+        '500':
+          description: Internal server error

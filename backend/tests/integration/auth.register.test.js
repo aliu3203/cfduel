@@ -1,14 +1,19 @@
 import { describe, test, before, beforeEach, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import path from 'node:path';
+// import path from 'node:path'; no path import for migration
 import request from 'supertest';
 
 import app from '../../src/app.js';
 import pool from '../../src/db.js';
 
+const ORIGIN = process.env.FRONTEND_ORIGIN;
+
 const valid = { username: 'alice', email: 'alice@example.com', password: 'correct-horse' };
-const register = (body) => request(app).post('/auth/register').send(body);
+const register = (body) =>
+    request(app).post('/auth/register')
+        .set('Origin', ORIGIN)
+        .send(body);
 
 // Build the schema once from the migration, then empty the users table before every test.
 before(async () => {
@@ -16,8 +21,10 @@ before(async () => {
     if (!rows[0].db.endsWith('_test')) {
         throw new Error(`refusing to wipe "${rows[0].db}": use a database ending in _test`);
     }
-    await pool.query('DROP TABLE IF EXISTS users');
-    const migration = path.join(import.meta.dirname, '../../migrations/001_users.sql');
+    await pool.query(
+        'DROP TABLE IF EXISTS cf_verifications, duels, users'
+    );
+    const migration = new URL('../../migrations/001_users.sql', import.meta.url);
     await pool.query(fs.readFileSync(migration, 'utf8'));
 });
 beforeEach(() => pool.query('TRUNCATE users RESTART IDENTITY'));
