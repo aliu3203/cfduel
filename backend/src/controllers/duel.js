@@ -51,7 +51,7 @@ export async function history(req, res) {
             AND ($2::text IS NULL OR users.cf_handle = $2::citext)
             AND ($3::text IS NULL OR LOWER(duels.problem_id) = LOWER($3::text))
             AND ($4::text IS NULL OR duels.ended_at >= ($4::date::timestamp AT TIME ZONE 'America/Los_Angeles'))
-            AND ($5::text IS NULL OR duels.ended_at < ($5::date::timestamp AT TIME ZONE 'America/Los_Angeles'))
+            AND ($5::text IS NULL OR duels.ended_at < (($5::date + 1)::timestamp AT TIME ZONE 'America/Los_Angeles'))
             ORDER BY ended_at DESC`,
             [username,
             oppHandle||null,
