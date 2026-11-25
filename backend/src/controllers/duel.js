@@ -6,7 +6,7 @@ export async function history(req, res) {
     const error = validateHistorySearch({oppHandle,problemNum,startDate,endDate});
 
     if (error) {
-        return res.status(400).json({ error: error });
+        return res.status(400).json({ error });
     }
 
     try {
@@ -23,16 +23,18 @@ export async function history(req, res) {
         const username = UserInfo[0].username;
 
         const { rows: totals } = await pool.query(
-            `SELECT COUNT(*)::integer AS total
-             FROM duels
-             WHERE (player1_username = $1 OR player2_username = $1)
-             AND status = 'finished'`,
+            `SELECT EXISTS (
+            SELECT 1
+            FROM duels
+            WHERE (player1_username = $1 OR player2_username = $1)
+            AND status = 'finished'
+            ) AS has_played`,
             [username]
         );
-        const playedBefore = totals[0].total > 0;
+        const playedBefore = totals[0].has_played;
 
         if(!playedBefore){
-            return res.status(200).json({duels:[], playedBefore:false})
+            return res.status(200).json({duels:[], playedBefore:false});
         }
 
         //if user exists, find their finished duels
@@ -48,9 +50,8 @@ export async function history(req, res) {
             WHERE (duels.player1_username = $1 OR duels.player2_username = $1) AND duels.status = 'finished'
             AND ($2::text IS NULL OR users.cf_handle = $2::citext)
             AND ($3::text IS NULL OR LOWER(duels.problem_id) = LOWER($3::text))
-            AND ($4::text IS NULL OR duels.ended_at >= ($4::date::timestamp AT TIME ZONE 'PST'))
-            AND ($5::text IS NULL OR duels.ended_at < ($5::date::timestamp AT TIME ZONE 'PST'))
-
+            AND ($4::text IS NULL OR duels.ended_at >= ($4::date::timestamp AT TIME ZONE 'America/Los_Angeles'))
+            AND ($5::text IS NULL OR duels.ended_at < ($5::date::timestamp AT TIME ZONE 'America/Los_Angeles'))
             ORDER BY ended_at DESC`,
             [username,
             oppHandle||null,
@@ -58,6 +59,7 @@ export async function history(req, res) {
             startDate||null,
             endDate||null]
         );
+        console.error(error);
         return res.status(200).json({ duels: DuelInfo, playedBefore:true});
 
     } catch (error) {
