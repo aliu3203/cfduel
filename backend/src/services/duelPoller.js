@@ -11,8 +11,6 @@ export async function checkDuel(duel, now, getSubmission = getEarliestSubmission
     // One request at a time, to stay under Codeforces' rate limit.
     const player1Submission = await getSubmission(duel.player1_handle, duel.problem_id, duel.started_at);
     const player2Submission = await getSubmission(duel.player2_handle, duel.problem_id, duel.started_at);
-    const player1SolveTime = player1Submission?.time ?? null;
-    const player2SolveTime = player2Submission?.time ?? null;
 
     const result = duelDecide({
         startTime: duel.started_at,
@@ -25,20 +23,21 @@ export async function checkDuel(duel, now, getSubmission = getEarliestSubmission
         return null;
     }
 
-    // Only save solves that counted, so a solve after the timer hit 0 isn't mistaken for a real one.
+    // Only save solves that counted, so a solve after the timer hit 0, or a submission that might
+    // still be rejected, isn't mistaken for a real one.
     const endTime = new Date(duel.started_at.getTime() + duel.duration_seconds * 1000);
     return {
         result,
         ended_at: now,
-        player1_submission_at: solveThatCounted(player1SolveTime, endTime),
-        player2_submission_at: solveThatCounted(player2SolveTime, endTime),
+        player1_submission_at: solveThatCounted(player1Submission, endTime),
+        player2_submission_at: solveThatCounted(player2Submission, endTime),
     };
 }
 
-// Returns the solve time if it landed by the end of the duel, or null if there was none or it came too late.
-function solveThatCounted(solveTime, endTime) {
-    if (solveTime && solveTime <= endTime) {
-        return solveTime;
+// Returns the submission's time if it was accepted and made by the end of the duel, or null otherwise.
+function solveThatCounted(submission, endTime) {
+    if (submission?.status === 'accepted' && submission.time <= endTime) {
+        return submission.time;
     }
     return null;
 }
