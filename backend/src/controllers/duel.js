@@ -37,7 +37,6 @@ export async function history(req, res) {
             return res.status(200).json({duels:[], playedBefore:false});
         }
 
-        //if user exists, find their finished duels
         //optional filters: opponent handle, problem number, start/end date
         const { rows: DuelInfo } = await pool.query(
             `SELECT duels.*, users.cf_handle FROM duels
