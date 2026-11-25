@@ -147,4 +147,102 @@ paths:
                     example: Logged out
         '403':
           description: Untrusted request origin
+  /cf/verify/start:
+    post:
+      summary: Start Codeforces handle verification
+      description: >
+        Generates a verification code for the authenticated user.
+        The user must temporarily set their Codeforces first name
+        to this code. The code expires after 10 minutes.
+        Starting again replaces any previous pending verification.
+        Existing linked handles may be replaced after verification.
+      tags:
+        - Codeforces
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cfHandle
+              properties:
+                cfHandle:
+                  type: string
+                  example: tourist
+      responses:
+        '200':
+          description: Verification challenge created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - cfCode
+                  - expiresAt
+                properties:
+                  cfCode:
+                    type: string
+                    example: cfduel_0123456789abcdef
+                  expiresAt:
+                    type: string
+                    format: date-time
+        '400':
+          description: Invalid Codeforces handle
+        '401':
+          description: Not authenticated
+        '403':
+          description: Untrusted request origin
+        '404':
+          description: User not found
+        '409':
+          description: Codeforces handle already claimed
+        '500':
+          description: Internal server error
 
+  /cf/verify/confirm:
+    post:
+      summary: Confirm Codeforces handle ownership
+      description: >
+        Checks whether the Codeforces user's first name matches
+        the pending verification code. On success, links the
+        Codeforces handle to the authenticated account and
+        deletes the pending verification. The user may then
+        restore their original Codeforces first name.
+      tags:
+        - Codeforces
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Codeforces handle successfully verified
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - cfHandle
+                properties:
+                  cfHandle:
+                    type: string
+                    example: tourist
+        '400':
+          description: Codeforces first name does not match verification code
+        '401':
+          description: Not authenticated
+        '403':
+          description: Untrusted request origin
+        '404':
+          description: User or pending verification not found
+        '409':
+          description: Codeforces handle already claimed or verification changed
+        '410':
+          description: Verification code expired
+        '502':
+          description: Codeforces API unavailable or returned an error
+        '504':
+          description: Codeforces API timed out
+        '500':
+          description: Internal server error
