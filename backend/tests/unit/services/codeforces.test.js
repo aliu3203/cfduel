@@ -43,13 +43,25 @@ describe('findEarliestSubmission', () => {
         assert.equal(findEarliestSubmission(submissions, '1850A', START), null);
     });
 
-    test('ignores submissions that were not accepted', () => {
+    test('ignores rejected submissions', () => {
         const submissions = [
             submission({ verdict: 'WRONG_ANSWER', creationTimeSeconds: 1795197660 }),
-            submission({ verdict: 'TESTING', creationTimeSeconds: 1795197720 }),
+            submission({ verdict: 'TIME_LIMIT_EXCEEDED', creationTimeSeconds: 1795197720 }),
+            submission({ verdict: 'COMPILATION_ERROR', creationTimeSeconds: 1795197780 }),
         ];
 
         assert.equal(findEarliestSubmission(submissions, '1850A', START), null);
+    });
+
+    test('skips a rejected submission and returns the accepted one after it', () => {
+        const submissions = [
+            submission({ creationTimeSeconds: 1795197720 }), // 18:02:00 accepted
+            submission({ verdict: 'WRONG_ANSWER', creationTimeSeconds: 1795197660 }), // 18:01:00
+        ];
+
+        const result = findEarliestSubmission(submissions, '1850A', START);
+
+        assert.deepEqual(result, { time: new Date('2026-11-20T18:02:00Z'), status: 'accepted' });
     });
 
     test('ignores accepted solves of a different problem in the same contest', () => {
@@ -106,6 +118,38 @@ describe('findEarliestSubmission', () => {
                 `expected "${badId}" to be rejected`,
             );
         }
+    });
+
+    // A submission Codeforces hasn't finished judging might still be accepted, so it counts as 'judging'.
+    describe('when a submission is still being judged', () => {
+        test('returns a submission marked TESTING as judging', () => {
+            const submissions = [submission({ verdict: 'TESTING', creationTimeSeconds: 1795197660 })];
+
+            const result = findEarliestSubmission(submissions, '1850A', START);
+
+            assert.deepEqual(result, { time: new Date('2026-11-20T18:01:00Z'), status: 'judging' });
+        });
+
+        test('returns a submission with no verdict yet as judging', () => {
+            // Right after someone submits, Codeforces leaves the verdict out entirely.
+            const justSubmitted = submission({ creationTimeSeconds: 1795197660 });
+            delete justSubmitted.verdict;
+
+            const result = findEarliestSubmission([justSubmitted], '1850A', START);
+
+            assert.deepEqual(result, { time: new Date('2026-11-20T18:01:00Z'), status: 'judging' });
+        });
+
+        test('returns an earlier submission still being judged over a later accepted one', () => {
+            const submissions = [
+                submission({ creationTimeSeconds: 1795197900 }), // 18:05:00 accepted
+                submission({ verdict: 'TESTING', creationTimeSeconds: 1795197660 }), // 18:01:00
+            ];
+
+            const result = findEarliestSubmission(submissions, '1850A', START);
+
+            assert.deepEqual(result, { time: new Date('2026-11-20T18:01:00Z'), status: 'judging' });
+        });
     });
 });
 
