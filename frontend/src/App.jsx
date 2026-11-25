@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
 import HomePage from "./HomePage";
+import DuelHistory from './DuelHistory.jsx';
 
 
 export default function App() {
@@ -30,7 +31,8 @@ export default function App() {
             <HomePage
                 user={user}
                 onLogout={() => setUser(null)}
-            />
+            ><DuelHistory />
+            </HomePage>
         );
     }
 

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 
-export default function HomePage({ user, onLogout }) {
+export default function HomePage({ user, onLogout, children }) {
     const [cfHandle, setCfHandle] = useState('');
     const [linkedHandle, setLinkedHandle] = useState(user.cfHandle); // null if DNE
     const [cfCode, setCfCode] = useState(null);
@@ -135,10 +135,10 @@ export default function HomePage({ user, onLogout }) {
 
                 {cfError && <p>{cfError}</p>}
             </div>
-
             <button onClick={handleLogout}>
                 Logout
             </button>
+            {children}
         </div>
     );
 }

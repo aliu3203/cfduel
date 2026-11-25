@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import authRoutes from './auth.js';
 import cfRoutes from './cf.js';
+import duelRoutes from './duel.js';
 
 const router = Router();
 
@@ -9,7 +10,7 @@ const router = Router();
 
 router.use('/auth', authRoutes);
 router.use('/cf', cfRoutes);
-
+router.use('/duel', duelRoutes);
 
 router.get('/', (req, res) => {
     res.send("Hello World!");
