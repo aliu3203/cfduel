@@ -23,3 +23,6 @@ export function validateRegister( {username, email, password} ){
     }
     return null;
 }
+
+
+export default validateRegister;

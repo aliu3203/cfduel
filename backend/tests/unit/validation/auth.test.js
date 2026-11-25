@@ -1,6 +1,6 @@
-import { describe, test } from 'node:test';
+import {describe, test} from 'node:test';
 import assert from 'node:assert/strict';
-import { validateRegister } from '../../../src/validation/auth.js';
+import validateRegister from '../../../src/validation/auth.js';
 
 describe('validateRegister', () => {
     const valid = { username: 'andrew', email: 'aliu3203@gmail.com', password: '12345678'};
