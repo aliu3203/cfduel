@@ -1,26 +1,52 @@
-import { use, useState } from "react";
+import { useState } from "react";
 import "./DuelHistory.css";
 
 export default function DuelHistory() {
     const [username, setUsername] = useState("");
     const [duels, setDuels] = useState([]);
     const [error, setError] = useState("");
-    const [searchedUsername, setSearchedUsername] = useState("");
+    const [oppHandle, setOppHandle] = useState("");
+    const [problemNum, setProblemNum] = useState("");
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+    const [playedBefore, setPlayedBefore] = useState(false);
+    const [searchedBefore, setSearchedBefore] = useState(false);
 
     async function search() {
         //clear the previous search's error before starting a new one
         setError("");
+        setDuels([]);
+        setSearchedBefore(false);
+
         try {
-            //query the past duel database
-            const reply = await fetch(`/api/duel/history?username=${encodeURIComponent(username)}`);
+            //query the past duel database based on given filters
+            const params = new URLSearchParams();
+            if(oppHandle){
+                params.set("oppHandle",oppHandle);
+            }
+
+            if(problemNum){
+                params.set("problemNum",problemNum);
+            }
+
+            if(startDate){
+                params.set("startDate",startDate);
+            }
+
+            if(endDate){
+                params.set("endDate",endDate);
+            }
+
+            const reply = await fetch(`/api/duel/history?${params.toStrin()}`,{});
             const entries = await reply.json();
+
             if(!reply.ok){
-                setError(entries.error);
-                setDuels([]);
+                setError(entries.error || "search unsuccessful");
                 return;
             }
             setDuels(entries.duels);
-            setSearchedUsername(username);
+            setPlayedBefore(entries.playedBefore);
+            setSearchedBefore(true);
 
         } catch (err) {
             setError("server connection error");
