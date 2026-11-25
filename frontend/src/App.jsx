@@ -12,7 +12,7 @@ export default function App() {
     const [checkingSession, setCheckingSession] = useState(true);
 
     useEffect(() => {
-        fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
+        fetch(`/api/auth/me`, {
             credentials: "include"
         })
             .then(res => res.ok ? res.json() : null)

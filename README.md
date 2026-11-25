@@ -55,7 +55,6 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 For Windows, the database connection string is DATABASE_URL=postgres://postgres:postgres@localhost:5432/cfduel. 
 Change FRONTEND_ORIGIN to the origin you use in development/deployment (eg 127.0.0.1:5173), and change PORT to the port of the express server.
 
-In the frontend, similarly create a new .env file, and configure VITE_API_URL to your local URL. 
 **Ensure that the url does NOT contain a trailing /, as this will cause an invalid URL access.**
 
 ### Resetting the database (local development only)

@@ -10,7 +10,7 @@ export default function HomePage({ user, onLogout }) {
 
     async function handleLogout() {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/logout`, {
+            const response = await fetch(`/api/auth/logout`, {
                 method: "POST",
                 credentials: "include"
             });
@@ -30,7 +30,7 @@ export default function HomePage({ user, onLogout }) {
         setLoading(true);
         // dont allow additional button clicks while this request is processing
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/cf/verify/start`, {
+            const response = await fetch(`/api/cf/verify/start`, {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
@@ -56,7 +56,7 @@ export default function HomePage({ user, onLogout }) {
         setLoading(true);
         // dont allow additional button clicks while this request is processing
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/cf/verify/confirm`, {
+            const response = await fetch(`/api/cf/verify/confirm`, {
                 method: "POST",
                 credentials: "include"
             });
