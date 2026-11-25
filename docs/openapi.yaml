@@ -235,9 +235,9 @@ paths:
         '403':
           description: Untrusted request origin
         '404':
-          description: User or pending verification not found
+          description: User, pending verification, or Codeforces handle not found      
         '409':
-          description: Codeforces handle already claimed or verification changed
+          description: Codeforces handle already claimed, verification changed, or user has an unfinished duel
         '410':
           description: Verification code expired
         '502':

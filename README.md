@@ -31,6 +31,7 @@ cp .env.example .env          # then replace USER with your macOS username (run 
 createdb cfduel
 psql -d cfduel -f migrations/001_users.sql
 psql -d cfduel -f migrations/002_duels.sql
+psql -d cfduel -f migrations/003_cf_verifications.sql
 ```
 
 #### Windows
@@ -43,6 +44,7 @@ docker run --name cfduel-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD
 docker start cfduel-postgres
 docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/001_users.sql
 docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/002_duels.sql
+docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/003_cf_verifications.sql
 ```
 
 After copying .env.example to .env, set JWT_SECRET to a randomly generated secret. The backend will not start without it.
@@ -53,7 +55,7 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 ```
 
 For Windows, the database connection string is DATABASE_URL=postgres://postgres:postgres@localhost:5432/cfduel. 
-Change FRONTEND_ORIGIN to the origin you use in development/deployment (eg 127.0.0.1:5173), and change PORT to the port of the express server.
+Change FRONTEND_ORIGIN to the origin you use in development/deployment (eg 127.0.0.1:5173).
 
 **Ensure that the url does NOT contain a trailing /, as this will cause an invalid URL access.**
 
@@ -97,17 +99,6 @@ The API is documented in [`docs/openapi.yaml`](docs/openapi.yaml).
 ### Running tests
 
 Tests use a separate database, `cfduel_test`, which they wipe and rebuild on every run.
-
-Copy backend/.env.example.test to backend/.env.test before running integration tests.
-
-```bash
-createdb cfduel_test
-```
-
-For windows:
-```
-docker exec cfduel-postgres createdb -U postgres cfduel_test
-```
 
 Create `backend/.env.test` (gitignored), with `USER` replaced by your username (postgres for windows):
 

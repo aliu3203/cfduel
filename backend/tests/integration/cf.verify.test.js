@@ -185,3 +185,54 @@ test('confirm links handle and removes pending verification', async () => {
 
     assert.equal(pending.length, 0);
 });
+
+
+for (const status of ['pending', 'active']) {
+    test(`confirm rejects handle changes during a ${status} duel`, async () => {
+        const client = await login();
+        const started = await start(client);
+
+        assert.equal(started.status, 200);
+
+        // Create an opponent.
+        await pool.query(
+            `INSERT INTO users (username, email, password_hash)
+             VALUES ($1, $2, $3)`,
+            ['test_user_2', 'test_user_2@example.com', 'placeholder-hash']
+        );
+
+        // Active duels require started_at.
+        await pool.query(
+            `INSERT INTO duels
+                (player1_username, player2_username, status, started_at)
+             VALUES ($1, $2, $3, $4)`,
+            [
+                USERNAME,
+                'test_user_2',
+                status,
+                status === 'active' ? new Date() : null
+            ]
+        );
+
+        mockCodeforces(started.body.cfCode);
+
+        const response = await confirm(client);
+
+        assert.equal(response.status, 409);
+
+        const { rows: users } = await pool.query(
+            `SELECT cf_handle FROM users WHERE username = $1`,
+            [USERNAME]
+        );
+
+        assert.equal(users[0].cf_handle, null);
+
+        // Failed confirmation must preserve the pending challenge.
+        const { rows: pending } = await pool.query(
+            `SELECT id FROM cf_verifications WHERE username = $1`,
+            [USERNAME]
+        );
+
+        assert.equal(pending.length, 1);
+    });
+}

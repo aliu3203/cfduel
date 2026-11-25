@@ -174,6 +174,24 @@ async function confirm(req, res) {
                 });
             }
 
+            // Prevent changing handles during pending or active duels.
+            const { rows: activeDuels } = await client.query(
+                `SELECT id
+                FROM duels
+                WHERE (player1_username = $1 OR player2_username = $1)
+                AND status IN ('pending', 'active')
+                LIMIT 1`,
+                [userrows[0].username]
+            );
+
+            if (activeDuels.length > 0) {
+                await client.query('ROLLBACK');
+
+                return res.status(409).json({
+                    error: 'Cannot change Codeforces handle during an unfinished duel'
+                });
+            }
+
             // Update the user's linked Codeforces handle
             const updated = await client.query(
                 `UPDATE users
@@ -215,9 +233,23 @@ async function confirm(req, res) {
     } catch (err) {
         console.error('CF verification confirm failed:', err);
 
-        return res.status(500).json({
-            error: 'Internal server error'
-        });
+        if (cfData.status === 'FAILED') {
+            if (/user with handle .* not found/i.test(cfData.comment ?? '')) {
+                return res.status(404).json({
+                    error: 'Codeforces handle does not exist'
+                });
+            }
+
+            return res.status(502).json({
+                error: 'Codeforces API error'
+            });
+        }
+
+        if (cfData.status !== 'OK' || !cfData.result?.[0]) {
+            return res.status(502).json({
+                error: 'Could not retrieve Codeforces user'
+            });
+        }
     }
 }
 
