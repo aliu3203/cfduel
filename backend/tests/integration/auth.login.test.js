@@ -13,7 +13,7 @@ const valid = {
     password: 'correct-horse'
 };
 
-const ORIGIN = 'http://localhost:5173';
+const ORIGIN = process.env.FRONTEND_ORIGIN;
 
 const register = (body) =>
     request(app).post('/auth/register')
@@ -35,7 +35,9 @@ before(async () => {
     if (!rows[0].db.endsWith('_test')) {
         throw new Error(`refusing to wipe "${rows[0].db}": use a database ending in _test`);
     }
-    await pool.query('DROP TABLE IF EXISTS duels, users');
+    await pool.query(
+        'DROP TABLE IF EXISTS cf_verifications, duels, users'
+    );
     const migration = new URL('../../migrations/001_users.sql', import.meta.url);
     await pool.query(fs.readFileSync(migration, 'utf8'));
 });

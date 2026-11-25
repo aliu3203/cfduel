@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
 import HomePage from "./HomePage";
+import DuelHistory from './DuelHistory.jsx';
 
 
 export default function App() {
@@ -12,7 +13,7 @@ export default function App() {
     const [checkingSession, setCheckingSession] = useState(true);
 
     useEffect(() => {
-        fetch("http://localhost:3000/auth/me", {
+        fetch(`/api/auth/me`, {
             credentials: "include"
         })
             .then(res => res.ok ? res.json() : null)
@@ -30,7 +31,8 @@ export default function App() {
             <HomePage
                 user={user}
                 onLogout={() => setUser(null)}
-            />
+            ><DuelHistory />
+            </HomePage>
         );
     }
 

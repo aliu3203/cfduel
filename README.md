@@ -31,6 +31,7 @@ cp .env.example .env          # then replace USER with your macOS username (run 
 createdb cfduel
 psql -d cfduel -f migrations/001_users.sql
 psql -d cfduel -f migrations/002_duels.sql
+psql -d cfduel -f migrations/003_cf_verifications.sql
 ```
 
 #### Windows
@@ -39,9 +40,11 @@ cd backend
 npm install
 cp .env.example .env
 # Set DATABASE_URL in .env
+docker run --name cfduel-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=cfduel -p 5432:5432 -d postgres:16 # first time only!
 docker start cfduel-postgres
 docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/001_users.sql
 docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/002_duels.sql
+docker exec -i cfduel-postgres psql -U postgres -d cfduel < migrations/003_cf_verifications.sql
 ```
 
 After copying .env.example to .env, set JWT_SECRET to a randomly generated secret. The backend will not start without it.
@@ -51,7 +54,10 @@ Generate a secret using:
 node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 ```
 
+For Windows, the database connection string is DATABASE_URL=postgres://postgres:postgres@localhost:5432/cfduel. 
 Change FRONTEND_ORIGIN to the origin you use in development/deployment (eg 127.0.0.1:5173).
+
+**Ensure that the url does NOT contain a trailing /, as this will cause an invalid URL access.**
 
 ### Resetting the database (local development only)
 
@@ -64,6 +70,7 @@ dropdb cfduel
 createdb cfduel
 psql -d cfduel -v ON_ERROR_STOP=1 -f migrations/001_users.sql
 psql -d cfduel -v ON_ERROR_STOP=1 -f migrations/002_duels.sql
+psql -d cfduel -v ON_ERROR_STOP=1 -f migrations/003_cf_verifications.sql
 ```
 
 #### Windows (Git Bash + Docker)
@@ -74,6 +81,7 @@ docker exec cfduel-postgres dropdb -U postgres cfduel
 docker exec cfduel-postgres createdb -U postgres cfduel
 docker exec -i cfduel-postgres psql -U postgres -d cfduel -v ON_ERROR_STOP=1 < migrations/001_users.sql
 docker exec -i cfduel-postgres psql -U postgres -d cfduel -v ON_ERROR_STOP=1 < migrations/002_duels.sql
+docker exec -i cfduel-postgres psql -U postgres -d cfduel -v ON_ERROR_STOP=1 < migrations/003_cf_verifications.sql
 ```
 
 **Note:** Stop your backend server before resetting the database. Active connections can prevent `dropdb` from succeeding.
@@ -83,7 +91,7 @@ These commands reset only the `cfduel` database, not `cfduel_test` or other Post
 ### Running the server
 
 ```bash
-npm start                     # http://localhost:3000
+npm start                     # http://localhost:3000 
 ```
 
 The API is documented in [`docs/openapi.yaml`](docs/openapi.yaml).
@@ -91,10 +99,6 @@ The API is documented in [`docs/openapi.yaml`](docs/openapi.yaml).
 ### Running tests
 
 Tests use a separate database, `cfduel_test`, which they wipe and rebuild on every run.
-
-```bash
-createdb cfduel_test
-```
 
 Create `backend/.env.test` (gitignored), with `USER` replaced by your username (postgres for windows):
 
@@ -116,4 +120,17 @@ npm run test:integration      # integration tests only (Postgres must be running
 cd frontend
 npm install
 npm run dev
+```
+
+### Summary (full running instructions for Windows)
+```bash
+cd frontend
+npm run dev
+```
+
+Make sure Docker Desktop is running, then:
+```bash
+cd backend
+docker start cfduel-postgres
+node --watch --env-file=.env src/server.js  # --watch to restart on change
 ```
