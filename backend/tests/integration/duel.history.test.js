@@ -29,7 +29,7 @@ beforeEach(async () => {
     await pool.query(`
         INSERT INTO users (username,email,password_hash,cf_handle)
         VALUES
-            ('anna',anna@gmail.com',$1,'ann_cf'),
+            ('anna','anna@gmail.com',$1,'ann_cf'),
             ('boris','borisj@gmail.com',$1,'boris_cf'),
             ('nathan','natkc@gmail.com',$1,'nat_cf'),
             ('wilson','wilsonlosiento@gmail.com',$1,'wilsonls_cf'),
@@ -194,7 +194,7 @@ describe('GET /duel/history', () => {
 
     test('saoirse searches for wilson, active match', async () => {
         const client = await login('saoirse');
-        const res = await client.get('/duel/history').query({oppHandle: 'wilson_cf'});
+        const res = await client.get('/duel/history').query({oppHandle: 'wilsonls_cf'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.playedBefore,true);
@@ -324,6 +324,103 @@ describe('GET /duel/history', () => {
         assert.deepEqual(res.body.duels,[]);
     });
 
-    
+    //Error return status
 
+    test('no login', async () => {
+        const res = await request(app).get('/duel/history');
+
+        assert.equal(res.status,401);
+    });
+
+    test('invalid token', async () => {
+        const res = await request(app).get('/duel/history').set('Cookie','token=invalid');
+
+        assert.equal(res.status,401);
+    });
+
+    test('anna with only start date', async () => {
+        const client = await login('anna');
+        const res = await client.get('/duel/history').query({startDate: '2026-11-01'});
+
+        assert.equal(res.status,400);
+    });
+
+    test('boris with only end date', async () => {
+        const client = await login('boris');
+        const res = await client.get('/duel/history').query({endDate: '2026-11-03'});
+
+        assert.equal(res.status,400);
+    });
+
+    test('nathan with 2/30', async () => {
+        const client = await login('nathan');
+        const res = await client.get('/duel/history').query({startDate: '2026-11-03',endDate: '2027-02-30'});
+
+        assert.equal(res.status,400);
+    });
+
+    test('wilson with end date before start date', async () => {
+        const client = await login('wilson');
+        const res = await client.get('/duel/history').query({startDate: '2026-11-03',endDate: '2026-10-25'});
+
+        assert.equal(res.status,400);
+    });
+
+    //Combined tests
+
+    test('anna, boris 1843C', async () => {
+        const client = await login('anna');
+        const res = await client.get('/duel/history').query({oppHandle: 'boris_cf',problemNum: '1843C'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 2);
+        assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[8,1]);
+    });
+
+    test('boris, anna 11/1-3', async () => {
+        const client = await login('boris');
+        const res = await client.get('/duel/history').query({oppHandle: 'ann_cf',startDate: '2026-11-01',endDate: '2026-11-03'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 2);
+        assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[2,1]);
+    });
+
+    test('nathan, 1843C 10/25-11/11', async () => {
+        const client = await login('nathan');
+        const res = await client.get('/duel/history').query({problemNum: '1843C',startDate: '2026-10-25',endDate: '2026-11-11'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 3);
+        assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[6,3,10]);
+    });
+
+    test('saoirse, anna 1850A 11/12', async () => {
+        const client = await login('saoirse');
+        const res = await client.get('/duel/history').query({oppHandle: 'ann_cf',problemNum: '1850A',startDate: '2026-11-12',endDate: '2026-11-12'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.duels.length, 1);
+        assert.deepEqual(res.body.duels.map(duel => Number(duel.id)),[7]);
+    });
+
+    test('anna, boris 1843C 11/2-16', async () => {
+        const client = await login('anna');
+        const res = await client.get('/duel/history').query({oppHandle: 'boris_cf',problemNum: '1843C',startDate: '2026-11-02',endDate: '2026-11-16'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.playedBefore, true);
+        assert.equal(res.body.duels.length, 0);
+        assert.deepEqual(res.body.duels,[]);
+    });
+
+    test('boris, wilson 1856B 11/24', async () => {
+        const client = await login('boris');
+        const res = await client.get('/duel/history').query({oppHandle: 'wilsonls_cf',problemNum: '1856B',startDate: '2026-11-24',endDate: '2026-11-24'});
+
+        assert.equal(res.status,200);
+        assert.equal(res.body.playedBefore, true);
+        assert.equal(res.body.duels.length, 0);
+        assert.deepEqual(res.body.duels,[]);
+    });
 });
