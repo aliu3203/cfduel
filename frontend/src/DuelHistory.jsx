@@ -95,9 +95,9 @@ export default function DuelHistory({user}) {
 
             {error && <p>{error}</p>}
 
-            {searchedBefore && !playedBefore && (<p>No game has been played</p>)};
+            {searchedBefore && !playedBefore && (<p>No game has been played</p>)}
 
-            {searchedBefore && playedBefore && duels.length === 0 && (<p>No duels found</p>)};
+            {searchedBefore && playedBefore && duels.length === 0 && (<p>No duels found</p>)}
 
             {duels.map((record) => {
                 let color;
