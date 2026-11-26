@@ -1,8 +1,7 @@
 import { useState } from "react";
 import "./DuelHistory.css";
 
-export default function DuelHistory() {
-    const [username, setUsername] = useState("");
+export default function DuelHistory({user}) {
     const [duels, setDuels] = useState([]);
     const [error, setError] = useState("");
     const [oppHandle, setOppHandle] = useState("");
@@ -61,19 +60,50 @@ export default function DuelHistory() {
 
             <input
                 type="text"
-                value={username}
-                onChange={(e)=>setUsername(e.target.value)}
-                placeholder="Enter Username Here..."
+                value={oppHandle}
+                onChange={(e)=>setOppHandle(e.target.value)}
+                placeholder="Enter Opponent Codeforces Handle Here"
             />
+
+
+            <input
+                type="text"
+                value={problemNum}
+                onChange={(e)=>setProblemNum(e.target.value)}
+                placeholder="Enter Problem Number Here"
+            />
+
+            <label>
+                Start Date:
+                <input
+                type="date"
+                value={startDate}
+                onChange={(e)=>setStartDate(e.target.value)}
+            />
+            </label>
+
+            <label>
+                End Date:
+                <input
+                type="date"
+                value={endDate}
+                onChange={(e)=>setEndDate(e.target.value)}
+            />
+            </label>
             
             <button onClick={search}>Search</button>
 
             {error && <p>{error}</p>}
+
+            {searchedBefore && !playedBefore && (<p>No game has been played</p>)};
+
+            {searchedBefore && playedBefore && duels.length === 0 && (<p>No duels found</p>)};
+
             {duels.map((record) => {
                 let color;
                 //if the searched user wins the match, then display green; lose then red; draw then gray
                 //usernames are case-insensitive in the database, so compare them lowercased
-                const searched = searchedUsername.toLowerCase();
+                const searched = user.username.toLowerCase();
                 const winner = record.result === "player1" ? record.player1_username : record.player2_username;
                 if(record.result === "draw"){
                     color = "lightgray";
@@ -84,9 +114,16 @@ export default function DuelHistory() {
                 else{
                     color = "salmon";
                 }
+
+                const player1_ELO = record.player1_old_elo != null && record.player1_rating_delta != null ? record.player1_old_elo + record.player1_rating_delta : "N/A";
+                const player2_ELO = record.player2_old_elo != null && record.player2_rating_delta != null ? record.player2_old_elo + record.player2_rating_delta : "N/A";
                 return(
                 <div key={record.id} style={{backgroundColor:color}}>
-                    {record.player1_username} ELO: {record.player1_old_elo + record.player1_rating_delta} vs. {record.player2_username} ELO: {record.player2_old_elo + record.player2_rating_delta}
+                    <p>{record.player1_username} ELO: {player1_ELO} vs. {record.player2_username} ELO: {player2_ELO}</p>
+                    <p>Opponent: {record.cf_handle || "N/A"}</p>
+                    <p>Problem: {record.problem_id || "N/A"}</p>
+                    <p>Date: {record.ended_at ? new Date(record.ended_at).toLocaleString() : "N/A"}</p>
+
                 </div>
                 )})}
         </div>

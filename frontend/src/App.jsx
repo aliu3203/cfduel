@@ -31,7 +31,7 @@ export default function App() {
             <HomePage
                 user={user}
                 onLogout={() => setUser(null)}
-            ><DuelHistory />
+            ><DuelHistory user={user}/>
             </HomePage>
         );
     }
