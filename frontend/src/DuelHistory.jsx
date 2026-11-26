@@ -36,7 +36,7 @@ export default function DuelHistory({user}) {
                 params.set("endDate",endDate);
             }
 
-            const reply = await fetch(`/api/duel/history?${params.toStrin()}`,{});
+            const reply = await fetch(`/api/duel/history?${params.toString()}`,{});
             const entries = await reply.json();
 
             if(!reply.ok){
