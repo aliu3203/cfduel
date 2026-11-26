@@ -99,7 +99,7 @@ after(() => pool.end());
 async function login(username) {
     const client = request.agent(app);
 
-    const response = await client.post('/auth/login')
+    const response = await client.post('/api/auth/login')
         .set('Origin', process.env.FRONTEND_ORIGIN)
         .send({
             username: username,
@@ -115,7 +115,7 @@ describe('GET /duel/history', () => {
 
     test('player that hasnt played', async () => {
         const client = await login('lana');
-        const res = await client.get('/duel/history');
+        const res = await client.get('/api/duel/history');
 
         assert.equal(res.status,200);
         assert.equal(res.body.playedBefore,false);
@@ -124,7 +124,7 @@ describe('GET /duel/history', () => {
 
     test('player that hasnt played but with a search filter', async () => {
         const client = await login('lana');
-        const res = await client.get('/duel/history').query({oppHandle: 'wilsonls_cf'});
+        const res = await client.get('/api/duel/history').query({oppHandle: 'wilsonls_cf'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.playedBefore,false);
@@ -133,7 +133,7 @@ describe('GET /duel/history', () => {
 
     test('player that hasnt played but with search filters', async () => {
         const client = await login('saul');
-        const res = await client.get('/duel/history').query({oppHandle: 'nat_cf',problemNum: '1843C'});
+        const res = await client.get('/api/duel/history').query({oppHandle: 'nat_cf',problemNum: '1843C'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.playedBefore,false);
@@ -142,7 +142,7 @@ describe('GET /duel/history', () => {
 
     test('player that has played, only duels that have finished', async () => {
         const client = await login('anna');
-        const res = await client.get('/duel/history');
+        const res = await client.get('/api/duel/history');
 
         assert.equal(res.status,200);
         assert.equal(res.body.playedBefore,true);
@@ -151,7 +151,7 @@ describe('GET /duel/history', () => {
 
     test('player that has played, only duels that have finished', async () => {
         const client = await login('boris');
-        const res = await client.get('/duel/history');
+        const res = await client.get('/api/duel/history');
 
         assert.equal(res.status,200);
         assert.equal(res.body.playedBefore,true);
@@ -162,7 +162,7 @@ describe('GET /duel/history', () => {
 
     test('anna searches for boris, descending order', async () => {
         const client = await login('anna');
-        const res = await client.get('/duel/history').query({oppHandle: 'boris_cf'});
+        const res = await client.get('/api/duel/history').query({oppHandle: 'boris_cf'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.playedBefore,true);
@@ -173,7 +173,7 @@ describe('GET /duel/history', () => {
 
     test('boris searches for anna, reverse search', async () => {
         const client = await login('boris');
-        const res = await client.get('/duel/history').query({oppHandle: 'ann_cf'});
+        const res = await client.get('/api/duel/history').query({oppHandle: 'ann_cf'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.playedBefore,true);
@@ -184,7 +184,7 @@ describe('GET /duel/history', () => {
 
     test('sheldon searches for nathan, single instance', async () => {
         const client = await login('sheldon');
-        const res = await client.get('/duel/history').query({oppHandle: 'nat_cf'});
+        const res = await client.get('/api/duel/history').query({oppHandle: 'nat_cf'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 1);
@@ -194,7 +194,7 @@ describe('GET /duel/history', () => {
 
     test('saoirse searches for wilson, active match', async () => {
         const client = await login('saoirse');
-        const res = await client.get('/duel/history').query({oppHandle: 'wilsonls_cf'});
+        const res = await client.get('/api/duel/history').query({oppHandle: 'wilsonls_cf'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.playedBefore,true);
@@ -204,7 +204,7 @@ describe('GET /duel/history', () => {
 
     test('major searches for anna, case insensitive', async () => {
         const client = await login('major');
-        const res = await client.get('/duel/history').query({oppHandle: 'aNN_Cf'});
+        const res = await client.get('/api/duel/history').query({oppHandle: 'aNN_Cf'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.playedBefore,true);
@@ -216,7 +216,7 @@ describe('GET /duel/history', () => {
 
     test('anna, problem 1843C', async () => {
         const client = await login('anna');
-        const res = await client.get('/duel/history').query({problemNum: '1843C'});
+        const res = await client.get('/api/duel/history').query({problemNum: '1843C'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 3);
@@ -225,7 +225,7 @@ describe('GET /duel/history', () => {
 
     test('nathan, problem 1843C, order', async () => {
         const client = await login('nathan');
-        const res = await client.get('/duel/history').query({problemNum: '1843C'});
+        const res = await client.get('/api/duel/history').query({problemNum: '1843C'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 3);
@@ -234,7 +234,7 @@ describe('GET /duel/history', () => {
 
     test('wilson, problem 1844A, draw', async () => {
         const client = await login('wilson');
-        const res = await client.get('/duel/history').query({problemNum: '1844A'});
+        const res = await client.get('/api/duel/history').query({problemNum: '1844A'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 1);
@@ -243,7 +243,7 @@ describe('GET /duel/history', () => {
 
     test('saoirse, problem 1850A, lost', async () => {
         const client = await login('saoirse');
-        const res = await client.get('/duel/history').query({problemNum: '1850A'});
+        const res = await client.get('/api/duel/history').query({problemNum: '1850A'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 1);
@@ -252,7 +252,7 @@ describe('GET /duel/history', () => {
 
     test('boris, problem 1858A, cancelled', async () => {
         const client = await login('boris');
-        const res = await client.get('/duel/history').query({problemNum: '1858A'});
+        const res = await client.get('/api/duel/history').query({problemNum: '1858A'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 0);
@@ -261,7 +261,7 @@ describe('GET /duel/history', () => {
 
     test('sheldon, problem 1857A, pending', async () => {
         const client = await login('sheldon');
-        const res = await client.get('/duel/history').query({problemNum: '1857A'});
+        const res = await client.get('/api/duel/history').query({problemNum: '1857A'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 0);
@@ -272,7 +272,7 @@ describe('GET /duel/history', () => {
 
     test('anna, nov 1 to nov 10', async () => {
         const client = await login('anna');
-        const res = await client.get('/duel/history').query({startDate: '2026-11-01',endDate: '2026-11-10'});
+        const res = await client.get('/api/duel/history').query({startDate: '2026-11-01',endDate: '2026-11-10'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 5);
@@ -281,7 +281,7 @@ describe('GET /duel/history', () => {
 
     test('boris, nov 1 to nov 3', async () => {
         const client = await login('boris');
-        const res = await client.get('/duel/history').query({startDate: '2026-11-01',endDate: '2026-11-03'});
+        const res = await client.get('/api/duel/history').query({startDate: '2026-11-01',endDate: '2026-11-03'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 2);
@@ -290,7 +290,7 @@ describe('GET /duel/history', () => {
 
     test('nathan, oct 25 to nov 11', async () => {
         const client = await login('nathan');
-        const res = await client.get('/duel/history').query({startDate: '2026-10-25',endDate: '2026-11-11'});
+        const res = await client.get('/api/duel/history').query({startDate: '2026-10-25',endDate: '2026-11-11'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 3);
@@ -299,7 +299,7 @@ describe('GET /duel/history', () => {
 
     test('wilson, nov 7 to nov 7', async () => {
         const client = await login('wilson');
-        const res = await client.get('/duel/history').query({startDate: '2026-11-07',endDate: '2026-11-07'});
+        const res = await client.get('/api/duel/history').query({startDate: '2026-11-07',endDate: '2026-11-07'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 1);
@@ -308,7 +308,7 @@ describe('GET /duel/history', () => {
 
     test('saoirse, nov 12 to nov 12', async () => {
         const client = await login('saoirse');
-        const res = await client.get('/duel/history').query({startDate: '2026-11-12',endDate: '2026-11-12'});
+        const res = await client.get('/api/duel/history').query({startDate: '2026-11-12',endDate: '2026-11-12'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 1);
@@ -317,7 +317,7 @@ describe('GET /duel/history', () => {
 
     test('major, nov 20 to nov 24', async () => {
         const client = await login('major');
-        const res = await client.get('/duel/history').query({startDate: '2026-11-20',endDate: '2026-11-24'});
+        const res = await client.get('/api/duel/history').query({startDate: '2026-11-20',endDate: '2026-11-24'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 0);
@@ -327,41 +327,41 @@ describe('GET /duel/history', () => {
     //Error return status
 
     test('no login', async () => {
-        const res = await request(app).get('/duel/history');
+        const res = await request(app).get('/api/duel/history');
 
         assert.equal(res.status,401);
     });
 
     test('invalid token', async () => {
-        const res = await request(app).get('/duel/history').set('Cookie','token=invalid');
+        const res = await request(app).get('/api/duel/history').set('Cookie','token=invalid');
 
         assert.equal(res.status,401);
     });
 
     test('anna with only start date', async () => {
         const client = await login('anna');
-        const res = await client.get('/duel/history').query({startDate: '2026-11-01'});
+        const res = await client.get('/api/duel/history').query({startDate: '2026-11-01'});
 
         assert.equal(res.status,400);
     });
 
     test('boris with only end date', async () => {
         const client = await login('boris');
-        const res = await client.get('/duel/history').query({endDate: '2026-11-03'});
+        const res = await client.get('/api/duel/history').query({endDate: '2026-11-03'});
 
         assert.equal(res.status,400);
     });
 
     test('nathan with 2/30', async () => {
         const client = await login('nathan');
-        const res = await client.get('/duel/history').query({startDate: '2026-11-03',endDate: '2027-02-30'});
+        const res = await client.get('/api/duel/history').query({startDate: '2026-11-03',endDate: '2027-02-30'});
 
         assert.equal(res.status,400);
     });
 
     test('wilson with end date before start date', async () => {
         const client = await login('wilson');
-        const res = await client.get('/duel/history').query({startDate: '2026-11-03',endDate: '2026-10-25'});
+        const res = await client.get('/api/duel/history').query({startDate: '2026-11-03',endDate: '2026-10-25'});
 
         assert.equal(res.status,400);
     });
@@ -370,7 +370,7 @@ describe('GET /duel/history', () => {
 
     test('anna, boris 1843C', async () => {
         const client = await login('anna');
-        const res = await client.get('/duel/history').query({oppHandle: 'boris_cf',problemNum: '1843C'});
+        const res = await client.get('/api/duel/history').query({oppHandle: 'boris_cf',problemNum: '1843C'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 2);
@@ -379,7 +379,7 @@ describe('GET /duel/history', () => {
 
     test('boris, anna 11/1-3', async () => {
         const client = await login('boris');
-        const res = await client.get('/duel/history').query({oppHandle: 'ann_cf',startDate: '2026-11-01',endDate: '2026-11-03'});
+        const res = await client.get('/api/duel/history').query({oppHandle: 'ann_cf',startDate: '2026-11-01',endDate: '2026-11-03'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 2);
@@ -388,7 +388,7 @@ describe('GET /duel/history', () => {
 
     test('nathan, 1843C 10/25-11/11', async () => {
         const client = await login('nathan');
-        const res = await client.get('/duel/history').query({problemNum: '1843C',startDate: '2026-10-25',endDate: '2026-11-11'});
+        const res = await client.get('/api/duel/history').query({problemNum: '1843C',startDate: '2026-10-25',endDate: '2026-11-11'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 3);
@@ -397,7 +397,7 @@ describe('GET /duel/history', () => {
 
     test('saoirse, anna 1850A 11/12', async () => {
         const client = await login('saoirse');
-        const res = await client.get('/duel/history').query({oppHandle: 'ann_cf',problemNum: '1850A',startDate: '2026-11-12',endDate: '2026-11-12'});
+        const res = await client.get('/api/duel/history').query({oppHandle: 'ann_cf',problemNum: '1850A',startDate: '2026-11-12',endDate: '2026-11-12'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.duels.length, 1);
@@ -406,7 +406,7 @@ describe('GET /duel/history', () => {
 
     test('anna, boris 1843C 11/2-16', async () => {
         const client = await login('anna');
-        const res = await client.get('/duel/history').query({oppHandle: 'boris_cf',problemNum: '1843C',startDate: '2026-11-02',endDate: '2026-11-16'});
+        const res = await client.get('/api/duel/history').query({oppHandle: 'boris_cf',problemNum: '1843C',startDate: '2026-11-02',endDate: '2026-11-16'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.playedBefore, true);
@@ -416,7 +416,7 @@ describe('GET /duel/history', () => {
 
     test('boris, wilson 1856B 11/24', async () => {
         const client = await login('boris');
-        const res = await client.get('/duel/history').query({oppHandle: 'wilsonls_cf',problemNum: '1856B',startDate: '2026-11-24',endDate: '2026-11-24'});
+        const res = await client.get('/api/duel/history').query({oppHandle: 'wilsonls_cf',problemNum: '1856B',startDate: '2026-11-24',endDate: '2026-11-24'});
 
         assert.equal(res.status,200);
         assert.equal(res.body.playedBefore, true);
