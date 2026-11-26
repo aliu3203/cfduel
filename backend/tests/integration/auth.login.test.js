@@ -16,17 +16,17 @@ const valid = {
 const ORIGIN = process.env.FRONTEND_ORIGIN;
 
 const register = (body) =>
-    request(app).post('/auth/register')
+    request(app).post('/api/auth/register')
         .set('Origin', ORIGIN)
         .send(body);
 
 const login = (body, client = request(app)) =>
-    client.post('/auth/login')
+    client.post('/api/auth/login')
         .set('Origin', ORIGIN)
         .send(body);
 
 const logout = (client) =>
-    client.post('/auth/logout')
+    client.post('/api/auth/logout')
         .set('Origin', ORIGIN);
 
 // Build the schema once from the migration, then empty the users table before every test.
@@ -107,7 +107,7 @@ describe('POST /auth/login', () => {
 
         assert.equal(loginRes.status, 200);
 
-        const res = await agent.get('/auth/me');
+        const res = await agent.get('/api/auth/me');
 
         assert.equal(res.status, 200);
         assert.equal(res.body.username, 'alice');
@@ -117,7 +117,7 @@ describe('POST /auth/login', () => {
     });
 
     test('unauthenticated user cannot access /auth/me', async () => {
-        const res = await request(app).get('/auth/me');
+        const res = await request(app).get('/api/auth/me');
 
         assert.equal(res.status, 401);
     });
@@ -130,13 +130,13 @@ describe('POST /auth/login', () => {
             password: 'correct-horse'
         }, agent);
 
-        const beforeLogout = await agent.get('/auth/me');
+        const beforeLogout = await agent.get('/api/auth/me');
         assert.equal(beforeLogout.status, 200);
 
         const logoutRes = await logout(agent);
         assert.equal(logoutRes.status, 200);
 
-        const afterLogout = await agent.get('/auth/me');
+        const afterLogout = await agent.get('/api/auth/me');
         assert.equal(afterLogout.status, 401);
 
         assert.ok(logoutRes.headers['set-cookie']?.some(cookie =>
@@ -155,13 +155,13 @@ describe('POST /auth/login', () => {
         assert.equal(loginRes.status, 401);
         assert.equal(loginRes.headers['set-cookie'], undefined);
 
-        const res = await agent.get('/auth/me');
+        const res = await agent.get('/api/auth/me');
         assert.equal(res.status, 401);
     });
 
     test('rejects requests from an untrusted origin', async () => {
         const res = await request(app)
-            .post('/auth/login')
+            .post('/api/auth/login')
             .set('Origin', 'https://evil.example')
             .send({
                 username: 'alice',

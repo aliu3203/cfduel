@@ -6,7 +6,7 @@ info:
   description: HTTPS API for cfduel
 
 servers:
-  - url: http://localhost:3000 # CHANGE WITH YOUR FRONTEND API URL
+  - url: http://localhost:3000/api # CHANGE WITH YOUR FRONTEND API URL
 
 tags:
   - name: auth
