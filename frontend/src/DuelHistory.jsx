@@ -122,7 +122,7 @@ export default function DuelHistory({user}) {
                     <p>{record.player1_username} ELO: {player1_ELO} vs. {record.player2_username} ELO: {player2_ELO}</p>
                     <p>Opponent: {record.cf_handle || "N/A"}</p>
                     <p>Problem: {record.problem_id || "N/A"}</p>
-                    <p>Date: {record.ended_at ? new Date(record.ended_at).toLocaleString() : "N/A"}</p>
+                    <p>Date: {record.ended_at ? new Date(record.ended_at).toLocaleString(undefined, { timeZone: "America/Los_Angeles" }) + " PT" : "N/A"}</p>
 
                 </div>
                 )})}
