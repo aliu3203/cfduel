@@ -7,6 +7,6 @@ const router = Router();
 
 router.get('/history', requireAuth, duel.history);
 
-router.get('/', requireAuth, duel.create);
+router.post('/', requireAuth, duel.create);
 
 export default router;
