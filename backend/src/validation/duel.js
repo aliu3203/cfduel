@@ -8,7 +8,7 @@ function validDate(date){
 
 export function validateHistorySearch({oppUsername,problemNum,startDate,endDate}){
     if(oppUsername !== undefined && typeof oppUsername !== "string"){
-        return "invalid opponent handle";
+        return "invalid opponent username";
     }
     if(problemNum !== undefined && typeof problemNum !== "string"){
         return "invalid problem number";

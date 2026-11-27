@@ -21,7 +21,7 @@ export default function DuelHistory({user}) {
             //query the past duel database based on given filters
             const params = new URLSearchParams();
             if(oppUsername){
-                params.set("oppUsername",oppUsername);
+                params.set("oppUsername",oppUsername.trim());
             }
 
             if(problemNum){
