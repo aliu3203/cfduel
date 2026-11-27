@@ -118,20 +118,26 @@ async function confirm(req, res) {
             });
         }
 
-        if (!cfQuery.ok) {
+        const cfData = await cfQuery.json();
+
+        if (cfData.status === 'FAILED') {
+            if (/user with handle .* not found/i.test(cfData.comment ?? '')) {
+                return res.status(404).json({
+                    error: 'Codeforces handle does not exist'
+                });
+            }
+
             return res.status(502).json({
-                error: 'Codeforces API returned an error'
+                error: 'Codeforces API error'
             });
         }
 
-        const cfData = await cfQuery.json();
-
-        if (cfData.status !== 'OK' || !cfData.result?.[0]) {
+        if (!cfQuery.ok || cfData.status !== 'OK' || !cfData.result?.[0]) {
             return res.status(502).json({
                 error: 'Could not retrieve Codeforces user'
             });
         }
-
+        
         const cfUser = cfData.result[0];
 
         if (cfUser.firstName !== targetrows[0].cf_code) {
@@ -232,24 +238,7 @@ async function confirm(req, res) {
 
     } catch (err) {
         console.error('CF verification confirm failed:', err);
-
-        if (cfData.status === 'FAILED') {
-            if (/user with handle .* not found/i.test(cfData.comment ?? '')) {
-                return res.status(404).json({
-                    error: 'Codeforces handle does not exist'
-                });
-            }
-
-            return res.status(502).json({
-                error: 'Codeforces API error'
-            });
-        }
-
-        if (cfData.status !== 'OK' || !cfData.result?.[0]) {
-            return res.status(502).json({
-                error: 'Could not retrieve Codeforces user'
-            });
-        }
+        return res.status(500).json({ error: 'Internal server error' });
     }
 }
 
