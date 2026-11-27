@@ -279,9 +279,9 @@ paths:
           application/json:
             schema:
               type: object
-              required: [opponentUsername]
+              required: [oppUsername]
               properties:
-                opponentUsername:
+                oppUsername:
                   type: string
                   minLength: 1
                   description: Site username of the user to challenge
@@ -305,7 +305,7 @@ paths:
                     format: date-time
                     description: When the request expires if the duel has not started (10 minutes after creation)
         '400':
-          description: opponentUsername missing, not a string, or empty; or the user challenged themselves
+          description: oppUsername missing, not a string, or empty; or the user challenged themselves
           content:
             application/json:
               schema:

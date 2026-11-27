@@ -74,7 +74,7 @@ describe('POST /duel', () => {
 
     test('creates a pending duel with the challenger as player1', async () => {
         const client = await login('anna');
-        const res = await challenge(client, { opponentUsername: 'boris' });
+        const res = await challenge(client, { oppUsername: 'boris' });
 
         assert.equal(res.status, 201);
         assert.match(res.body.id, /^[1-9]\d*$/);
@@ -93,7 +93,7 @@ describe('POST /duel', () => {
 
     test('stores the opponent username as registered, not as typed', async () => {
         const client = await login('anna');
-        const res = await challenge(client, { opponentUsername: 'BoRiS' });
+        const res = await challenge(client, { oppUsername: 'BoRiS' });
 
         assert.equal(res.status, 201);
         const { rows } = await pool.query(
@@ -107,7 +107,7 @@ describe('POST /duel', () => {
     test('unknown username is an invalid user', async () => {
         const client = await login('anna');
         const countBefore = await duelCount();
-        const res = await challenge(client, { opponentUsername: 'nobody' });
+        const res = await challenge(client, { oppUsername: 'nobody' });
 
         assert.equal(res.status, 404);
         assert.equal(res.body.error, 'This is an invalid user');
@@ -119,18 +119,18 @@ describe('POST /duel', () => {
     test('cannot challenge yourself, in any letter case', async () => {
         const client = await login('anna');
         const countBefore = await duelCount();
-        const res = await challenge(client, { opponentUsername: 'Anna' });
+        const res = await challenge(client, { oppUsername: 'Anna' });
 
         assert.equal(res.status, 400);
         assert.equal(typeof res.body.error, 'string');
         assert.equal(await duelCount(), countBefore);
     });
 
-    test('rejects a missing, empty, or non-string opponentUsername', async () => {
+    test('rejects a missing, empty, or non-string oppUsername', async () => {
         const client = await login('anna');
         const countBefore = await duelCount();
 
-        for (const body of [{}, { opponentUsername: '' }, { opponentUsername: 42 }, { opponentUsername: ['boris'] }]) {
+        for (const body of [{}, { oppUsername: '' }, { oppUsername: 42 }, { oppUsername: ['boris'] }]) {
             const res = await challenge(client, body);
             assert.equal(res.status, 400, `body ${JSON.stringify(body)}`);
             assert.equal(typeof res.body.error, 'string');
@@ -141,7 +141,7 @@ describe('POST /duel', () => {
     test('challenger without a linked Codeforces handle is forbidden', async () => {
         const client = await login('dave');
         const countBefore = await duelCount();
-        const res = await challenge(client, { opponentUsername: 'boris' });
+        const res = await challenge(client, { oppUsername: 'boris' });
 
         assert.equal(res.status, 403);
         assert.equal(typeof res.body.error, 'string');
@@ -151,7 +151,7 @@ describe('POST /duel', () => {
     test('opponent without a linked Codeforces handle cannot be challenged', async () => {
         const client = await login('anna');
         const countBefore = await duelCount();
-        const res = await challenge(client, { opponentUsername: 'dave' });
+        const res = await challenge(client, { oppUsername: 'dave' });
 
         assert.equal(res.status, 409);
         assert.equal(typeof res.body.error, 'string');
@@ -177,9 +177,9 @@ describe('POST /duel', () => {
             [boris, 'carol'], // same direction as an active duel
             [carol, 'boris'], // reverse direction of an active duel
         ];
-        for (const [client, opponentUsername] of cases) {
-            const res = await challenge(client, { opponentUsername });
-            assert.equal(res.status, 409, `challenge to ${opponentUsername}`);
+        for (const [client, oppUsername] of cases) {
+            const res = await challenge(client, { oppUsername });
+            assert.equal(res.status, 409, `challenge to ${oppUsername}`);
             assert.equal(typeof res.body.error, 'string');
         }
         assert.equal(await duelCount(), countBefore);
@@ -190,7 +190,7 @@ describe('POST /duel', () => {
         const res = await request(app)
             .post('/api/duel')
             .set('Origin', ORIGIN)
-            .send({ opponentUsername: 'boris' });
+            .send({ oppUsername: 'boris' });
 
         assert.equal(res.status, 401);
         assert.equal(await duelCount(), countBefore);
