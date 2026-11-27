@@ -18,7 +18,7 @@ describe('validateHistorySearch', () => {
     test('invalid opponent username', () => {
         assert.equal(validateHistorySearch({
             oppUsername: 123}),
-        'invalid opponent handle');
+        'invalid opponent username');
     });
 
     test('valid problem number', () => {
