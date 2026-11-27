@@ -88,6 +88,29 @@ docker exec -i cfduel-postgres psql -U postgres -d cfduel -v ON_ERROR_STOP=1 < m
 
 These commands reset only the `cfduel` database, not `cfduel_test` or other PostgreSQL databases.
 
+### Dev accounts (local development only)
+
+`seed.sql` adds three accounts you can log in with right away, plus a few sample duels between them:
+
+| Username | Password      | Rating |
+| -------- | ------------- | ------ |
+| `alice`  | `password123` | 1030   |
+| `bob`    | `password123` | 985    |
+| `carol`  | `password123` | 1000   |
+
+Load them after running the migrations (and again after resetting the database):
+
+```bash
+psql -d cfduel -v ON_ERROR_STOP=1 -f seed.sql                                          # Mac
+docker exec -i cfduel-postgres psql -U postgres -d cfduel -v ON_ERROR_STOP=1 < seed.sql  # Windows
+```
+
+It is safe to run more than once: it resets these accounts' passwords and only adds the sample duels the first time. None of the accounts have a Codeforces handle linked.
+
+**Never run `seed.sql` against a production or shared database.** The passwords are public.
+
+To be logged in as two users at once, use two separate browser sessions, such as a normal window and a private/incognito window, or two different browsers. Tabs in the same browser share the login cookie, so logging in as `bob` in a second tab logs `alice` out.
+
 ### Running the server
 
 ```bash
