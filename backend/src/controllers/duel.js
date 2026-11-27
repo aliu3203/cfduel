@@ -1,5 +1,5 @@
 import pool from '../db.js';
-import { validateHistorySearch } from '../validation/duel.js';
+import { validateHistorySearch, validateCreate } from '../validation/duel.js';
 
 export async function history(req, res) {
     const {oppUsername, problemNum, startDate, endDate} = req.query;
@@ -63,5 +63,40 @@ export async function history(req, res) {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "server error" });
+    }
+}
+
+export async function create(req, res) {
+    const {oppUsername} = req.body ?? {};
+    const error = validateCreate({oppUsername});
+
+    if (error) {
+        return res.status(400).json({ error });
+    }
+
+    const client = await pool.connect();
+    try{
+        await client.query('BEGIN');
+        const { rows: UserInfo } = await client.query(
+            `SELECT username, cf_handle FROM users WHERE id=$1 FOR UPDATE
+            `,
+            [req.user.id]
+        );
+        if( UserInfo.length === 0 ){
+            await client.query('ROLLBACK');
+            return res.status(401).json({error: 'Not authenticated'});
+        }
+        if( !UserInfo[0].cf_handle ){
+            await client.query('ROLLBACK');
+            return res.status(403).json({error: 'Codeforces account not linked'});
+        }
+    }
+    catch (err){
+        await client.query('ROLLBACK');
+        console.error(err);
+        return res.status(500).json({ error: 'server error' });
+    }
+    finally{
+        client.release();
     }
 }
