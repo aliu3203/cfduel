@@ -14,10 +14,6 @@ app.use(requireTrustedOrigin);
 app.use(cookieParser());
 app.use(express.json());
 
-
-
-// !!!!! IMPORTANT !!!!!!!!
-// This should mount to /api or something similar in the future
 app.use('/api', router);
 
 export default app;
