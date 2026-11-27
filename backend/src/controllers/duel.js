@@ -2,8 +2,8 @@ import pool from '../db.js';
 import { validateHistorySearch } from '../validation/duel.js';
 
 export async function history(req, res) {
-    const {oppHandle, problemNum, startDate, endDate} = req.query;
-    const error = validateHistorySearch({oppHandle,problemNum,startDate,endDate});
+    const {oppUsername, problemNum, startDate, endDate} = req.query;
+    const error = validateHistorySearch({oppUsername,problemNum,startDate,endDate});
 
     if (error) {
         return res.status(400).json({ error });
@@ -37,23 +37,23 @@ export async function history(req, res) {
             return res.status(200).json({duels:[], playedBefore:false});
         }
 
-        //optional filters: opponent handle, problem number, start/end date
+        //optional filters: opponent username, problem number, start/end date
         const { rows: DuelInfo } = await pool.query(
-            `SELECT duels.*, users.cf_handle FROM duels
-            JOIN users 
-                ON users.username = CASE
+            `SELECT duels.*, opp.username AS opp_username FROM duels
+            JOIN users as opp
+                ON opp.username = CASE
                     WHEN duels.player1_username = $1::citext
                     THEN duels.player2_username
                     ELSE duels.player1_username
                 END
             WHERE (duels.player1_username = $1 OR duels.player2_username = $1) AND duels.status = 'finished'
-            AND ($2::text IS NULL OR users.cf_handle = $2::citext)
+            AND ($2::text IS NULL OR opp.username = $2::citext)
             AND ($3::text IS NULL OR LOWER(duels.problem_id) = LOWER($3::text))
             AND ($4::text IS NULL OR duels.ended_at >= ($4::date::timestamp AT TIME ZONE 'America/Los_Angeles'))
             AND ($5::text IS NULL OR duels.ended_at < (($5::date + 1)::timestamp AT TIME ZONE 'America/Los_Angeles'))
-            ORDER BY ended_at DESC`,
+            ORDER BY ended_at DESC, duels.id DESC`,
             [username,
-            oppHandle||null,
+            oppUsername||null,
             problemNum||null,
             startDate||null,
             endDate||null]

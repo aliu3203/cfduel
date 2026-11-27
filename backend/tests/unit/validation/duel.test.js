@@ -9,16 +9,16 @@ describe('validateHistorySearch', () => {
         null);
     });
 
-    test('valid opponent handle', () => {
+    test('valid opponent username', () => {
         assert.equal(validateHistorySearch({
-            oppHandle:'boris_cf'}),
+            oppUsername:'boris'}),
         null);
     });
 
-    test('invalid opponent handle', () => {
+    test('invalid opponent username', () => {
         assert.equal(validateHistorySearch({
-            oppHandle: 123}),
-        'invalid opponent handle');
+            oppUsername: 123}),
+        'invalid opponent username');
     });
 
     test('valid problem number', () => {

@@ -6,9 +6,9 @@ function validDate(date){
     return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === date;
 }
 
-export function validateHistorySearch({oppHandle,problemNum,startDate,endDate}){
-    if(oppHandle !== undefined && typeof oppHandle !== "string"){
-        return "invalid opponent handle";
+export function validateHistorySearch({oppUsername,problemNum,startDate,endDate}){
+    if(oppUsername !== undefined && typeof oppUsername !== "string"){
+        return "invalid opponent username";
     }
     if(problemNum !== undefined && typeof problemNum !== "string"){
         return "invalid problem number";
