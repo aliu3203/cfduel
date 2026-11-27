@@ -246,3 +246,89 @@ paths:
           description: Codeforces API timed out
         '500':
           description: Internal server error
+
+  /duel:
+    post:
+      tags: [duel]
+      summary: Challenge another user to a duel
+      description: >
+        Creates a pending duel with the authenticated user as player1 (the
+        challenger) and the named user as player2. Both users must have a
+        linked Codeforces handle. The opponent is looked up by site username
+        (case-insensitive), not by Codeforces handle, and the duel stores the
+        opponent's username as it was registered. Only one open (pending or
+        active) duel may exist between the same two users, in either
+        direction; finished and cancelled duels do not count.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [opponentUsername]
+              properties:
+                opponentUsername:
+                  type: string
+                  minLength: 1
+                  description: Site username of the user to challenge
+                  example: boris
+      responses:
+        '201':
+          description: Duel created with status pending
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id]
+                properties:
+                  id:
+                    type: string
+                    pattern: '^[1-9][0-9]*$'
+                    description: Duel id, a string because it may exceed a JS integer
+                    example: '42'
+        '400':
+          description: opponentUsername missing, not a string, or empty; or the user challenged themselves
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated
+        '403':
+          description: Untrusted request origin, or the challenger has not linked a Codeforces handle
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: No user has this username
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: This is an invalid user
+        '409':
+          description: The opponent has not linked a Codeforces handle, or a pending or active duel already exists between the two users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
