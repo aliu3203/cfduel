@@ -8,10 +8,10 @@
 -- the first time.
 
 -- The hash is bcrypt('password123'). Re-running fixes accounts made by an older seed with a fake hash.
-INSERT INTO users (username, email, password_hash, rating) VALUES
-    ('alice', 'alice@example.com', '$2b$12$MDBy2YrbASAkCf5qWVsYkOKndbJNR5Fr2DJ0D0XSHn1pehY.yDDv2', 1030),
-    ('bob',   'bob@example.com',   '$2b$12$MDBy2YrbASAkCf5qWVsYkOKndbJNR5Fr2DJ0D0XSHn1pehY.yDDv2', 985),
-    ('carol', 'carol@example.com', '$2b$12$MDBy2YrbASAkCf5qWVsYkOKndbJNR5Fr2DJ0D0XSHn1pehY.yDDv2', 1000)
+INSERT INTO users (username, email, password_hash, cf_handle, rating) VALUES
+    ('alice', 'alice@example.com', '$2b$12$MDBy2YrbASAkCf5qWVsYkOKndbJNR5Fr2DJ0D0XSHn1pehY.yDDv2', 'aliu3203', 1030),
+    ('bob',   'bob@example.com',   '$2b$12$MDBy2YrbASAkCf5qWVsYkOKndbJNR5Fr2DJ0D0XSHn1pehY.yDDv2', 'lattermatter', 985),
+    ('carol', 'carol@example.com', '$2b$12$MDBy2YrbASAkCf5qWVsYkOKndbJNR5Fr2DJ0D0XSHn1pehY.yDDv2', 'jzye', 1000)
 ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash;
 
 -- Sample duels, skipped if the dev accounts already have duels with each other
