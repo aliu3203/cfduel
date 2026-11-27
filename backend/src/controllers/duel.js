@@ -1,5 +1,5 @@
 import pool from '../db.js';
-import { validateHistorySearch } from '../validation/duel.js';
+import { validateHistorySearch, validateCreate } from '../validation/duel.js';
 
 export async function history(req, res) {
     const {oppUsername, problemNum, startDate, endDate} = req.query;
@@ -63,5 +63,14 @@ export async function history(req, res) {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "server error" });
+    }
+}
+
+export async function create(req, res) {
+    const {oppUsername} = req.query;
+    const error = validateCreate({oppUsername});
+
+    if (error) {
+        return res.status(400).json({ error });
     }
 }
