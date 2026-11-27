@@ -4,7 +4,7 @@ import "./DuelHistory.css";
 export default function DuelHistory({user}) {
     const [duels, setDuels] = useState([]);
     const [error, setError] = useState("");
-    const [oppHandle, setOppHandle] = useState("");
+    const [oppUsername, setOppUsername] = useState("");
     const [problemNum, setProblemNum] = useState("");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
@@ -20,8 +20,8 @@ export default function DuelHistory({user}) {
         try {
             //query the past duel database based on given filters
             const params = new URLSearchParams();
-            if(oppHandle){
-                params.set("oppHandle",oppHandle);
+            if(oppUsername){
+                params.set("oppUsername",oppUsername);
             }
 
             if(problemNum){
@@ -60,9 +60,9 @@ export default function DuelHistory({user}) {
 
             <input
                 type="text"
-                value={oppHandle}
-                onChange={(e)=>setOppHandle(e.target.value)}
-                placeholder="Enter Opponent Codeforces Handle Here"
+                value={oppUsername}
+                onChange={(e)=>setOppUsername(e.target.value)}
+                placeholder="Enter Opponent Username Here"
             />
 
 
