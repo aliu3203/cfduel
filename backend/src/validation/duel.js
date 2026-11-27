@@ -30,7 +30,7 @@ export function validateHistorySearch({oppUsername,problemNum,startDate,endDate}
 }
 
 export function validateCreate({oppUsername}){
-    if(typeof opponentUsername !== "string" || opponentUsername.length === 0){
+    if(typeof oppUsername !== "string" || oppUsername.length === 0){
         return "invalid opponent username";
     }
     return null;
