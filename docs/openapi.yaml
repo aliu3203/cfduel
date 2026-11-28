@@ -279,13 +279,24 @@ paths:
           application/json:
             schema:
               type: object
-              required: [oppUsername]
+              required: [oppUsername, problemRating]
               properties:
                 oppUsername:
                   type: string
                   minLength: 1
                   description: Site username of the user to challenge
                   example: boris
+                problemRating:
+                  type: integer
+                  minimum: 800
+                  maximum: 3500
+                  multipleOf: 100
+                  description: >
+                    Desired Codeforces problem rating. The backend randomly
+                    selects an eligible problem of this rating when both
+                    players are ready, excluding problems already solved
+                    by either player.
+                  example: 1400
       responses:
         '201':
           description: Duel created with status pending
